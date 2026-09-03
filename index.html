@@ -1,0 +1,183 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>The Basement</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #000;
+    color: white;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.screen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(60,60,60,.18),
+            #000 65%
+        );
+}
+
+.container {
+    width: 90%;
+    max-width: 800px;
+}
+
+.title {
+    font-size: clamp(60px, 11vw, 130px);
+    letter-spacing: 15px;
+    color: #ddd;
+
+    text-shadow:
+        0 0 10px #fff,
+        0 0 30px #666,
+        0 0 60px #222;
+
+    animation: flicker 4s infinite;
+}
+
+.subtitle {
+    margin-top: 10px;
+    color: #666;
+    letter-spacing: 8px;
+    font-size: 14px;
+}
+
+.play {
+    margin-top: 55px;
+
+    padding: 20px 70px;
+
+    background: #111;
+    border: 1px solid #777;
+
+    color: white;
+    font-size: 20px;
+    letter-spacing: 5px;
+
+    cursor: pointer;
+
+    transition: .25s;
+}
+
+.play:hover {
+    background: white;
+    color: black;
+
+    box-shadow:
+        0 0 20px white,
+        0 0 50px #555;
+}
+
+.warning {
+    margin-top: 35px;
+    color: #444;
+    font-size: 11px;
+    letter-spacing: 3px;
+}
+
+@keyframes flicker {
+
+    0%, 18%, 20%, 22%, 63%, 64%, 100% {
+        opacity: 1;
+    }
+
+    19%, 21%, 62% {
+        opacity: .5;
+    }
+}
+
+/* creepy moving shadow */
+
+.shadow {
+    position: fixed;
+    width: 300px;
+    height: 500px;
+
+    background: #050505;
+
+    border-radius: 50%;
+
+    filter: blur(40px);
+
+    opacity: .18;
+
+    pointer-events: none;
+
+    animation: moveShadow 12s infinite alternate ease-in-out;
+}
+
+@keyframes moveShadow {
+
+    from {
+        left: -150px;
+        bottom: -100px;
+    }
+
+    to {
+        right: -150px;
+        top: -100px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="shadow"></div>
+
+<div class="screen">
+
+    <div class="container">
+
+        <div class="title">
+            THE BASEMENT
+        </div>
+
+        <div class="subtitle">
+            SOMETHING IS DOWN HERE
+        </div>
+
+        <button class="play" onclick="startGame()">
+            PLAY
+        </button>
+
+        <div class="warning">
+            HEADPHONES RECOMMENDED
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function startGame() {
+    window.location.href = "game.html";
+}
+
+</script>
+
+</body>
+</html>
+```
