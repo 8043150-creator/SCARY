@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>THE BACKROOMS</title>
 
 <style>
@@ -13,8 +12,7 @@
     padding: 0;
 }
 
-html,
-body {
+html, body {
     width: 100%;
     height: 100%;
 }
@@ -22,32 +20,24 @@ body {
 body {
     min-height: 100vh;
     overflow: hidden;
-
     font-family: Arial, Helvetica, sans-serif;
-
     color: white;
 
     background:
-        radial-gradient(
-            circle at center,
+        radial-gradient(circle at center,
             #4a451b 0%,
             #27250e 35%,
-            #0c0b07 100%
-        );
+            #0c0b07 100%);
 
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* Old fluorescent light effect */
-
 body::before {
     content: "";
-
     position: fixed;
     inset: 0;
-
     pointer-events: none;
 
     background:
@@ -61,14 +51,10 @@ body::before {
     opacity: .5;
 }
 
-/* Slight darkness around edges */
-
 body::after {
     content: "";
-
     position: fixed;
     inset: 0;
-
     pointer-events: none;
 
     background:
@@ -79,27 +65,18 @@ body::after {
         );
 }
 
-/* Main container */
-
 .container {
     position: relative;
     z-index: 5;
-
     width: 92%;
     max-width: 700px;
-
     text-align: center;
 }
 
-/* Title */
-
 .title {
     font-size: clamp(50px, 10vw, 105px);
-
     font-weight: 900;
-
     letter-spacing: 13px;
-
     color: #d8ce72;
 
     text-shadow:
@@ -111,63 +88,44 @@ body::after {
 
 .subtitle {
     color: #999;
-
     font-size: 13px;
-
     letter-spacing: 7px;
-
     margin-bottom: 38px;
 }
 
-/* Menu box */
-
 .menu {
     width: 100%;
-
     padding: 35px;
 
-    background:
-        rgba(0,0,0,.52);
+    background: rgba(0,0,0,.52);
 
-    border:
-        1px solid rgba(220,205,100,.25);
+    border: 1px solid rgba(220,205,100,.25);
 
-    box-shadow:
-        0 0 60px rgba(0,0,0,.6);
+    box-shadow: 0 0 60px rgba(0,0,0,.6);
 
     backdrop-filter: blur(8px);
 }
 
-/* Labels */
-
 .label {
     display: block;
-
     margin-bottom: 8px;
 
     color: #888;
 
     font-size: 10px;
-
     letter-spacing: 3px;
 }
 
-/* Inputs */
-
 input {
     width: 100%;
-
     height: 52px;
 
     padding: 0 15px;
-
     margin-bottom: 13px;
 
-    background:
-        rgba(255,255,255,.045);
+    background: rgba(255,255,255,.045);
 
-    border:
-        1px solid #66603b;
+    border: 1px solid #66603b;
 
     outline: none;
 
@@ -176,7 +134,6 @@ input {
     text-align: center;
 
     font-size: 16px;
-
     letter-spacing: 2px;
 
     transition: .2s;
@@ -189,30 +146,23 @@ input::placeholder {
 input:focus {
     border-color: #d7ca63;
 
-    background:
-        rgba(220,205,90,.06);
+    background: rgba(220,205,90,.06);
 
     box-shadow:
         0 0 20px rgba(220,205,90,.12);
 }
 
-/* Buttons */
-
 button {
     width: 100%;
-
     height: 52px;
 
-    border:
-        1px solid #a89e50;
+    border: 1px solid #a89e50;
 
-    background:
-        rgba(210,198,80,.08);
+    background: rgba(210,198,80,.08);
 
     color: #eee;
 
     font-size: 15px;
-
     font-weight: bold;
 
     letter-spacing: 4px;
@@ -226,8 +176,7 @@ button {
 }
 
 button:hover {
-    background:
-        rgba(210,198,80,.2);
+    background: rgba(210,198,80,.2);
 
     box-shadow:
         0 0 25px rgba(220,205,90,.15);
@@ -239,18 +188,13 @@ button:active {
     transform: translateY(1px);
 }
 
-/* Join section */
-
 .joinSection {
     margin-top: 28px;
-
     padding-top: 28px;
 
     border-top:
         1px solid rgba(255,255,255,.08);
 }
-
-/* Error */
 
 #error {
     min-height: 22px;
@@ -262,19 +206,14 @@ button:active {
     font-size: 13px;
 }
 
-/* Party lobby */
-
 #partyScreen {
     display: none;
 }
-
-/* Party code */
 
 .codeLabel {
     color: #777;
 
     font-size: 11px;
-
     letter-spacing: 3px;
 }
 
@@ -284,7 +223,6 @@ button:active {
     color: #e0d66d;
 
     font-size: 48px;
-
     font-weight: 900;
 
     letter-spacing: 12px;
@@ -303,11 +241,8 @@ button:active {
     margin-bottom: 25px;
 }
 
-/* Players */
-
 .players {
     width: 100%;
-
     margin-bottom: 20px;
 
     text-align: left;
@@ -318,8 +253,7 @@ button:active {
 
     margin-bottom: 5px;
 
-    background:
-        rgba(255,255,255,.04);
+    background: rgba(255,255,255,.04);
 
     border-left:
         2px solid transparent;
@@ -336,8 +270,6 @@ button:active {
         #d6c957;
 }
 
-/* Waiting */
-
 .waiting {
     margin-top: 14px;
 
@@ -347,8 +279,6 @@ button:active {
 
     letter-spacing: 1px;
 }
-
-/* Footer */
 
 .footer {
     margin-top: 20px;
@@ -360,10 +290,7 @@ button:active {
     letter-spacing: 2px;
 }
 
-/* Mobile */
-
-@media (max-width: 600px) {
-
+@media(max-width:600px) {
     .menu {
         padding: 25px 20px;
     }
@@ -384,154 +311,125 @@ button:active {
 
 <div class="container">
 
-    <!-- =================================================
-         MAIN MENU
-    ================================================== -->
+<div id="mainMenu">
 
-    <div id="mainMenu">
+<div class="title">
+LEVEL 0
+</div>
 
-        <div class="title">
-            LEVEL 0
-        </div>
+<div class="subtitle">
+THE BACKROOMS
+</div>
 
-        <div class="subtitle">
-            THE BACKROOMS
-        </div>
+<div class="menu">
 
+<label class="label">
+ENTER YOUR NAME
+</label>
 
-        <div class="menu">
+<input
+id="nameInput"
+type="text"
+maxlength="16"
+placeholder="PLAYER"
+autocomplete="off"
+>
 
-            <label class="label">
-                ENTER YOUR NAME
-            </label>
+<button id="createButton">
+CREATE PARTY
+</button>
 
-            <input
-                id="nameInput"
-                type="text"
-                maxlength="16"
-                placeholder="PLAYER"
-                autocomplete="off"
-            >
+<div class="joinSection">
 
+<label class="label">
+HAVE A PARTY CODE?
+</label>
 
-            <button id="createButton">
-                CREATE PARTY
-            </button>
+<input
+id="codeInput"
+type="text"
+maxlength="5"
+placeholder="XXXXX"
+autocomplete="off"
+>
 
+<button id="joinButton">
+JOIN PARTY
+</button>
 
-            <div class="joinSection">
+</div>
 
-                <label class="label">
-                    HAVE A PARTY CODE?
-                </label>
+<div id="error"></div>
 
-                <input
-                    id="codeInput"
-                    type="text"
-                    maxlength="5"
-                    placeholder="XXXXX"
-                    autocomplete="off"
-                >
+</div>
 
-                <button id="joinButton">
-                    JOIN PARTY
-                </button>
+<div class="footer">
+YOU SHOULDN'T BE HERE
+</div>
 
-            </div>
-
-
-            <div id="error"></div>
-
-        </div>
+</div>
 
 
-        <div class="footer">
-            YOU SHOULDN'T BE HERE
-        </div>
+<div id="partyScreen">
 
-    </div>
+<div class="title">
+PARTY
+</div>
 
+<div class="subtitle">
+LEVEL 0
+</div>
 
-    <!-- =================================================
-         PARTY LOBBY
-    ================================================== -->
+<div class="menu">
 
-    <div id="partyScreen">
+<div class="codeLabel">
+YOUR PARTY CODE
+</div>
 
-        <div class="title">
-            PARTY
-        </div>
+<div
+class="partyCode"
+id="partyCode"
+>
+-----
+</div>
 
-        <div class="subtitle">
-            LEVEL 0
-        </div>
+<div class="shareText">
+Give this code to your friends.<br>
+Up to 8 players can enter the party.
+</div>
 
+<div
+class="players"
+id="players"
+></div>
 
-        <div class="menu">
+<button
+id="startGame"
+style="display:none;"
+>
+START GAME
+</button>
 
-            <div class="codeLabel">
-                YOUR PARTY CODE
-            </div>
+<div
+class="waiting"
+id="waiting"
+>
+Waiting for the host...
+</div>
 
-            <div
-                class="partyCode"
-                id="partyCode"
-            >
-                -----
-            </div>
+</div>
 
-            <div class="shareText">
-                Give this code to your friends.<br>
-                Up to 8 players can enter the party.
-            </div>
-
-
-            <div
-                class="players"
-                id="players"
-            ></div>
-
-
-            <button
-                id="startGame"
-                style="display:none;"
-            >
-                START GAME
-            </button>
-
-
-            <div
-                class="waiting"
-                id="waiting"
-            >
-                Waiting for the host...
-            </div>
-
-        </div>
-
-    </div>
+</div>
 
 </div>
 
 
 <script>
 
-/* =====================================================
-   MULTIPLAYER VARIABLES
-===================================================== */
-
 let socket = null;
-
 let myId = null;
-
 let partyCode = null;
-
 let isHost = false;
-
-
-/* =====================================================
-   CONNECT TO SERVER
-===================================================== */
 
 function connect() {
 
@@ -545,70 +443,40 @@ function connect() {
         return;
     }
 
-
     const protocol =
         location.protocol === "https:"
         ? "wss:"
         : "ws:";
 
-
-    socket = new WebSocket(
-        `${protocol}//${location.host}`
-    );
-
-
-    socket.onopen = function() {
-
-        console.log(
-            "Connected to Backrooms server."
+    socket =
+        new WebSocket(
+            `${protocol}//${location.host}`
         );
 
-        /*
-            The create/join button will send
-            its message after connection.
-        */
-
+    socket.onopen = () => {
+        console.log("Connected.");
     };
 
-
-    socket.onmessage = function(event) {
+    socket.onmessage = event => {
 
         let data;
 
         try {
-
-            data =
-                JSON.parse(event.data);
-
+            data = JSON.parse(event.data);
         } catch {
-
             return;
         }
 
         handleMessage(data);
     };
 
-
-    socket.onerror = function() {
+    socket.onerror = () => {
 
         showError(
             "Could not connect to the server."
         );
     };
-
-
-    socket.onclose = function() {
-
-        console.log(
-            "Disconnected from server."
-        );
-    };
 }
-
-
-/* =====================================================
-   SEND DATA
-===================================================== */
 
 function send(data) {
 
@@ -616,23 +484,11 @@ function send(data) {
         socket &&
         socket.readyState === WebSocket.OPEN
     ) {
-
         socket.send(
             JSON.stringify(data)
         );
-
-    } else {
-
-        showError(
-            "Connecting to server..."
-        );
     }
 }
-
-
-/* =====================================================
-   WAIT FOR CONNECTION
-===================================================== */
 
 function sendWhenConnected(data) {
 
@@ -640,15 +496,11 @@ function sendWhenConnected(data) {
         socket &&
         socket.readyState === WebSocket.OPEN
     ) {
-
         send(data);
-
         return;
     }
 
-
     connect();
-
 
     const wait =
         setInterval(() => {
@@ -665,26 +517,18 @@ function sendWhenConnected(data) {
 
         }, 50);
 
-
     setTimeout(() => {
-
         clearInterval(wait);
-
     }, 5000);
 }
-
-
-/* =====================================================
-   GET PLAYER NAME
-===================================================== */
 
 function getName() {
 
     let name =
-        document.getElementById(
-            "nameInput"
-        ).value.trim();
-
+        document
+        .getElementById("nameInput")
+        .value
+        .trim();
 
     if (!name) {
 
@@ -695,146 +539,95 @@ function getName() {
             );
     }
 
-
-    /*
-        Save the name so game.html
-        knows who the player is.
-    */
-
     localStorage.setItem(
         "playerName",
         name
     );
 
-
     return name;
 }
-
-
-/* =====================================================
-   SHOW ERROR
-===================================================== */
 
 function showError(message) {
 
     document.getElementById(
         "error"
-    ).textContent =
-        message;
+    ).textContent = message;
 }
-
-
-/* =====================================================
-   SHOW PARTY SCREEN
-===================================================== */
 
 function showPartyScreen() {
 
     document.getElementById(
         "mainMenu"
-    ).style.display =
-        "none";
-
+    ).style.display = "none";
 
     document.getElementById(
         "partyScreen"
-    ).style.display =
-        "block";
+    ).style.display = "block";
 }
-
-
-/* =====================================================
-   UPDATE PARTY LOBBY
-===================================================== */
 
 function updateLobby(data) {
 
-    partyCode =
-        data.code;
-
+    partyCode = data.code;
 
     isHost =
         data.hostId === myId;
-
 
     document.getElementById(
         "partyCode"
     ).textContent =
         data.code;
 
-
     const players =
         document.getElementById(
             "players"
         );
 
-
     players.innerHTML = "";
 
+    data.players.forEach(player => {
 
-    data.players.forEach(
-        player => {
+        const div =
+            document.createElement("div");
 
-            const div =
-                document.createElement(
-                    "div"
-                );
+        div.className = "player";
 
+        if (
+            player.id === data.hostId
+        ) {
 
-            div.className =
-                "player";
+            div.classList.add("host");
 
+            div.textContent =
+                "👑 " +
+                player.name +
+                " — HOST";
 
-            if (
-                player.id === data.hostId
-            ) {
+        } else {
 
-                div.classList.add(
-                    "host"
-                );
-
-                div.textContent =
-                    "👑  " +
-                    player.name +
-                    " — HOST";
-
-            } else {
-
-                div.textContent =
-                    "👤  " +
-                    player.name;
-            }
-
-
-            players.appendChild(
-                div
-            );
+            div.textContent =
+                "👤 " +
+                player.name;
         }
-    );
 
+        players.appendChild(div);
+    });
 
-    const startButton =
+    const start =
         document.getElementById(
             "startGame"
         );
-
 
     const waiting =
         document.getElementById(
             "waiting"
         );
 
-
-    /*
-        Host gets the START GAME button.
-    */
-
     if (
         isHost &&
         !data.started
     ) {
 
-        startButton.style.display =
+        start.style.display =
             "block";
 
         waiting.textContent =
@@ -842,7 +635,7 @@ function updateLobby(data) {
 
     } else {
 
-        startButton.style.display =
+        start.style.display =
             "none";
 
         waiting.textContent =
@@ -850,269 +643,162 @@ function updateLobby(data) {
     }
 }
 
-
-/* =====================================================
-   SERVER MESSAGES
-===================================================== */
-
 function handleMessage(data) {
 
-    switch (data.type) {
+    if (data.type === "partyCreated") {
 
+        myId =
+            data.playerId;
 
-        /* ---------------------------------------------
-           PARTY CREATED
-        --------------------------------------------- */
+        partyCode =
+            data.code;
 
-        case "partyCreated":
+        showPartyScreen();
 
-            myId =
-                data.playerId;
+    }
 
-            partyCode =
-                data.code;
+    else if (data.type === "partyJoined") {
 
-            showPartyScreen();
+        myId =
+            data.playerId;
 
-            break;
+        partyCode =
+            data.code;
 
+        showPartyScreen();
 
-        /* ---------------------------------------------
-           PARTY JOINED
-        --------------------------------------------- */
+    }
 
-        case "partyJoined":
+    else if (data.type === "lobby") {
 
-            myId =
-                data.playerId;
+        updateLobby(data);
 
-            partyCode =
-                data.code;
+    }
 
-            showPartyScreen();
+    else if (data.type === "gameStarted") {
 
-            break;
+        localStorage.setItem(
+            "partyCode",
+            partyCode
+        );
 
-
-        /* ---------------------------------------------
-           LOBBY UPDATE
-        --------------------------------------------- */
-
-        case "lobby":
-
-            updateLobby(data);
-
-            break;
-
-
-        /* ---------------------------------------------
-           GAME STARTED
-        --------------------------------------------- */
-
-        case "gameStarted":
-
-            /*
-                Save party information.
-            */
-
-            localStorage.setItem(
-                "partyCode",
+        window.location.href =
+            "game.html?party=" +
+            encodeURIComponent(
                 partyCode
             );
 
+    }
 
-            /*
-                Go into the actual game.
-            */
+    else if (data.type === "error") {
 
-            window.location.href =
-                "game.html?party=" +
-                encodeURIComponent(
-                    partyCode
-                );
-
-            break;
-
-
-        /* ---------------------------------------------
-           ERROR
-        --------------------------------------------- */
-
-        case "error":
-
-            showError(
-                data.message
-            );
-
-            break;
+        showError(
+            data.message
+        );
     }
 }
 
-
-/* =====================================================
-   CREATE PARTY
-===================================================== */
-
 document.getElementById(
     "createButton"
-).addEventListener(
-    "click",
-    function() {
+).onclick = () => {
 
-        showError("");
+    showError("");
 
+    connect();
 
-        const name =
-            getName();
+    sendWhenConnected({
 
+        type: "createParty",
 
-        connect();
+        name: getName()
 
-
-        sendWhenConnected({
-
-            type: "createParty",
-
-            name: name
-
-        });
-
-    }
-);
-
-
-/* =====================================================
-   JOIN PARTY
-===================================================== */
+    });
+};
 
 document.getElementById(
     "joinButton"
-).addEventListener(
-    "click",
-    function() {
+).onclick = () => {
 
-        showError("");
+    showError("");
 
+    const code =
+        document
+        .getElementById("codeInput")
+        .value
+        .trim()
+        .toUpperCase();
 
-        const code =
-            document.getElementById(
-                "codeInput"
-            ).value
-            .trim()
-            .toUpperCase();
+    if (code.length !== 5) {
 
+        showError(
+            "Party codes are 5 characters."
+        );
 
-        if (
-            code.length !== 5
-        ) {
-
-            showError(
-                "Party codes are 5 characters."
-            );
-
-            return;
-        }
-
-
-        const name =
-            getName();
-
-
-        connect();
-
-
-        sendWhenConnected({
-
-            type: "joinParty",
-
-            code: code,
-
-            name: name
-
-        });
-
+        return;
     }
-);
 
+    connect();
 
-/* =====================================================
-   START GAME
-===================================================== */
+    sendWhenConnected({
+
+        type: "joinParty",
+
+        code: code,
+
+        name: getName()
+
+    });
+};
 
 document.getElementById(
     "startGame"
-).addEventListener(
-    "click",
-    function() {
+).onclick = () => {
 
-        send({
-            type: "startGame"
-        });
-
-    }
-);
-
-
-/* =====================================================
-   ENTER KEY
-===================================================== */
+    send({
+        type: "startGame"
+    });
+};
 
 document.getElementById(
     "nameInput"
 ).addEventListener(
     "keydown",
-    function(event) {
+    event => {
 
-        if (
-            event.key === "Enter"
-        ) {
+        if (event.key === "Enter") {
 
-            document.getElementById(
-                "createButton"
-            ).click();
-
+            document
+            .getElementById("createButton")
+            .click();
         }
-
     }
 );
-
 
 document.getElementById(
     "codeInput"
 ).addEventListener(
     "keydown",
-    function(event) {
+    event => {
 
-        if (
-            event.key === "Enter"
-        ) {
+        if (event.key === "Enter") {
 
-            document.getElementById(
-                "joinButton"
-            ).click();
-
+            document
+            .getElementById("joinButton")
+            .click();
         }
-
     }
 );
 
-
-/* =====================================================
-   AUTO-FILL SAVED NAME
-===================================================== */
-
-const savedName =
+const saved =
     localStorage.getItem(
         "playerName"
     );
 
-
-if (savedName) {
+if (saved) {
 
     document.getElementById(
         "nameInput"
-    ).value =
-        savedName;
+    ).value = saved;
 }
 
 </script>
