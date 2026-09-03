@@ -1,5 +1,5 @@
 {
-  "name": "backrooms-multiplayer",
+  "name": "the-backrooms-multiplayer",
   "version": "1.0.0",
   "description": "Multiplayer Backrooms horror game",
   "main": "server.js",
