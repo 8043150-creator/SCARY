@@ -3,561 +3,1170 @@ const fs = require("fs");
 const path = require("path");
 const WebSocket = require("ws");
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+    process.env.PORT || 3000;
 
-const server = http.createServer((req, res) => {
+const server =
+    http.createServer(
+        (req, res) => {
 
-    let filePath = req.url.split("?")[0];
+            let filePath =
+                req.url.split("?")[0];
 
-    if (filePath === "/") {
-        filePath = "/index.html";
-    }
+            if (filePath === "/") {
+                filePath = "/index.html";
+            }
 
-    const fullPath = path.join(__dirname, filePath);
+            filePath =
+                path.join(
+                    __dirname,
+                    filePath
+                );
 
-    if (!fs.existsSync(fullPath)) {
-        res.writeHead(404);
-        res.end("Not found");
-        return;
-    }
+            if (!fs.existsSync(filePath)) {
 
-    const ext = path.extname(fullPath);
+                res.writeHead(404);
+                res.end("Not found");
 
-    const types = {
-        ".html": "text/html",
-        ".js": "text/javascript",
-        ".css": "text/css",
-        ".json": "application/json",
-        ".png": "image/png",
-        ".jpg": "image/jpeg",
-        ".svg": "image/svg+xml"
-    };
+                return;
+            }
 
-    res.writeHead(200, {
-        "Content-Type": types[ext] || "application/octet-stream"
+            const ext =
+                path.extname(
+                    filePath
+                );
+
+            const types = {
+
+                ".html":
+                    "text/html",
+
+                ".js":
+                    "text/javascript",
+
+                ".css":
+                    "text/css",
+
+                ".json":
+                    "application/json",
+
+                ".png":
+                    "image/png",
+
+                ".jpg":
+                    "image/jpeg",
+
+                ".svg":
+                    "image/svg+xml"
+            };
+
+            res.writeHead(
+                200,
+                {
+                    "Content-Type":
+                        types[ext] ||
+                        "application/octet-stream"
+                }
+            );
+
+            fs.createReadStream(
+                filePath
+            ).pipe(res);
+        }
+    );
+
+
+const wss =
+    new WebSocket.Server({
+        server
     });
 
-    fs.createReadStream(fullPath).pipe(res);
-});
 
-const wss = new WebSocket.Server({
-    server
-});
+// ============================================================
+// DATA
+// ============================================================
+
+const parties =
+    new Map();
+
+const clients =
+    new Map();
 
 
-/*
-=========================================================
-PARTIES
-=========================================================
-*/
+// ============================================================
+// HELPERS
+// ============================================================
 
-const parties = new Map();
+function makeId() {
 
-const CODE_CHARS =
-    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    return (
+        Math.random()
+            .toString(36)
+            .substring(2, 10)
+    );
+}
 
 
 function makeCode() {
 
-    let code;
+    const chars =
+        "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+    let code = "";
 
     do {
 
         code = "";
 
-        for (let i = 0; i < 5; i++) {
-            code += CODE_CHARS[
-                Math.floor(
-                    Math.random() * CODE_CHARS.length
-                )
-            ];
+        for (
+            let i = 0;
+            i < 5;
+            i++
+        ) {
+
+            code +=
+                chars[
+                    Math.floor(
+                        Math.random() *
+                        chars.length
+                    )
+                ];
         }
 
-    } while (parties.has(code));
+    } while (
+        parties.has(code)
+    );
 
     return code;
 }
 
 
-function makePlayerId() {
+function cleanName(name) {
 
-    return Math.random()
-        .toString(36)
-        .substring(2, 10)
-        .toUpperCase();
+    if (
+        typeof name !==
+        "string"
+    ) {
+
+        return "Player";
+    }
+
+    name =
+        name
+            .replace(
+                /[^a-zA-Z0-9 _-]/g,
+                ""
+            )
+            .trim()
+            .substring(0, 16);
+
+    return name ||
+        "Player";
 }
 
 
 function send(ws, data) {
 
-    if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify(data));
+    if (
+        ws &&
+        ws.readyState ===
+        WebSocket.OPEN
+    ) {
+
+        ws.send(
+            JSON.stringify(data)
+        );
     }
 }
 
 
-function broadcast(party, data) {
+function broadcast(
+    party,
+    data
+) {
 
-    for (const player of party.players.values()) {
-        send(player.ws, data);
-    }
-}
+    party.players.forEach(
+        player => {
 
-
-function lobbyData(party) {
-
-    return {
-        type: "lobby",
-        code: party.code,
-        hostId: party.hostId,
-        started: party.started,
-
-        players: Array.from(
-            party.players.values()
-        ).map(player => ({
-            id: player.id,
-            name: player.name
-        }))
-    };
-}
-
-
-/*
-=========================================================
-CREATE PARTY
-=========================================================
-*/
-
-function createParty(ws, name) {
-
-    const code = makeCode();
-    const id = makePlayerId();
-
-    const party = {
-        code,
-        hostId: id,
-        started: false,
-
-        players: new Map(),
-
-        cards: [
-            {
-                id: 0,
-                x: -32,
-                z: -28,
-                collected: false
-            },
-            {
-                id: 1,
-                x: 28,
-                z: -16,
-                collected: false
-            },
-            {
-                id: 2,
-                x: -20,
-                z: 32,
-                collected: false
-            }
-        ],
-
-        monster: {
-            x: 36,
-            z: 30
+            send(
+                player.ws,
+                data
+            );
         }
-    };
-
-    party.players.set(id, {
-        id,
-        name: name || "Player",
-        ws,
-        x: 0,
-        y: 1.65,
-        z: 0,
-        rotation: 0
-    });
-
-    parties.set(code, party);
-
-    ws.playerId = id;
-    ws.partyCode = code;
-
-    send(ws, {
-        type: "partyCreated",
-        code,
-        playerId: id
-    });
-
-    broadcast(
-        party,
-        lobbyData(party)
     );
 }
 
 
-/*
-=========================================================
-JOIN PARTY
-=========================================================
-*/
+function sendLobby(
+    party
+) {
 
-function joinParty(ws, code, name) {
+    broadcast(
+        party,
+        {
+            type: "lobby",
 
-    code = String(code || "")
-        .trim()
-        .toUpperCase();
+            code: party.code,
 
-    const party = parties.get(code);
+            hostId: party.hostId,
+
+            started:
+                party.started,
+
+            players:
+                Array.from(
+                    party.players.values()
+                ).map(
+                    player => ({
+                        id:
+                            player.id,
+
+                        name:
+                            player.name
+                    })
+                )
+        }
+    );
+}
+
+
+function removePlayer(
+    player
+) {
+
+    if (!player.party) {
+        return;
+    }
+
+    const party =
+        parties.get(
+            player.party
+        );
+
+    if (!party) {
+        return;
+    }
+
+    party.players.delete(
+        player.id
+    );
+
+    clients.delete(
+        player.ws
+    );
+
+
+    if (
+        party.players.size === 0
+    ) {
+
+        parties.delete(
+            party.code
+        );
+
+        return;
+    }
+
+
+    // choose new host
+
+    if (
+        party.hostId ===
+        player.id
+    ) {
+
+        const first =
+            party.players
+                .values()
+                .next()
+                .value;
+
+        if (first) {
+
+            party.hostId =
+                first.id;
+        }
+    }
+
+
+    sendLobby(
+        party
+    );
+}
+
+
+// ============================================================
+// CONNECTION
+// ============================================================
+
+wss.on(
+    "connection",
+    ws => {
+
+        const player = {
+
+            id:
+                makeId(),
+
+            ws,
+
+            name:
+                "Player",
+
+            party:
+                null,
+
+            x: 0,
+
+            z: 0,
+
+            yaw: 0
+        };
+
+
+        clients.set(
+            ws,
+            player
+        );
+
+
+        ws.on(
+            "message",
+            raw => {
+
+                let data;
+
+                try {
+
+                    data =
+                        JSON.parse(
+                            raw.toString()
+                        );
+
+                } catch {
+
+                    send(
+                        ws,
+                        {
+                            type:
+                                "error",
+
+                            message:
+                                "Invalid message."
+                        }
+                    );
+
+                    return;
+                }
+
+
+                handleMessage(
+                    player,
+                    data
+                );
+            }
+        );
+
+
+        ws.on(
+            "close",
+            () => {
+
+                removePlayer(
+                    player
+                );
+            }
+        );
+
+
+        ws.on(
+            "error",
+            () => {
+
+                removePlayer(
+                    player
+                );
+            }
+        );
+    }
+);
+
+
+// ============================================================
+// MESSAGE HANDLER
+// ============================================================
+
+function handleMessage(
+    player,
+    data
+) {
+
+    if (
+        data.type ===
+        "createParty"
+    ) {
+
+        createParty(
+            player,
+            data.name
+        );
+
+        return;
+    }
+
+
+    if (
+        data.type ===
+        "joinParty"
+    ) {
+
+        joinParty(
+            player,
+            data.code,
+            data.name
+        );
+
+        return;
+    }
+
+
+    if (
+        data.type ===
+        "startGame"
+    ) {
+
+        startGame(
+            player
+        );
+
+        return;
+    }
+
+
+    if (
+        data.type ===
+        "gameJoin"
+    ) {
+
+        gameJoin(
+            player,
+            data.code,
+            data.name
+        );
+
+        return;
+    }
+
+
+    if (
+        data.type ===
+        "playerUpdate"
+    ) {
+
+        updatePlayer(
+            player,
+            data
+        );
+
+        return;
+    }
+
+
+    if (
+        data.type ===
+        "collectKey"
+    ) {
+
+        collectKey(
+            player
+        );
+
+        return;
+    }
+
+
+    if (
+        data.type ===
+        "gameWon"
+    ) {
+
+        gameWon(
+            player
+        );
+
+        return;
+    }
+
+
+    if (
+        data.type ===
+        "gameOver"
+    ) {
+
+        gameOver(
+            player
+        );
+
+        return;
+    }
+}
+
+
+// ============================================================
+// CREATE PARTY
+// ============================================================
+
+function createParty(
+    player,
+    name
+) {
+
+    if (player.party) {
+
+        send(
+            player.ws,
+            {
+                type:
+                    "error",
+
+                message:
+                    "You are already in a party."
+            }
+        );
+
+        return;
+    }
+
+
+    const code =
+        makeCode();
+
+
+    const party = {
+
+        code,
+
+        hostId:
+            player.id,
+
+        started:
+            false,
+
+        keyCollected:
+            false,
+
+        players:
+            new Map()
+    };
+
+
+    player.name =
+        cleanName(name);
+
+    player.party =
+        code;
+
+
+    party.players.set(
+        player.id,
+        player
+    );
+
+
+    parties.set(
+        code,
+        party
+    );
+
+
+    send(
+        player.ws,
+        {
+
+            type:
+                "partyCreated",
+
+            playerId:
+                player.id,
+
+            code
+        }
+    );
+
+
+    sendLobby(
+        party
+    );
+}
+
+
+// ============================================================
+// JOIN PARTY
+// ============================================================
+
+function joinParty(
+    player,
+    code,
+    name
+) {
+
+    code =
+        String(
+            code || ""
+        )
+        .toUpperCase()
+        .trim();
+
+
+    const party =
+        parties.get(code);
+
 
     if (!party) {
 
-        send(ws, {
-            type: "error",
-            message: "Party not found."
-        });
+        send(
+            player.ws,
+            {
+
+                type:
+                    "error",
+
+                message:
+                    "Party not found."
+            }
+        );
 
         return;
     }
 
-    if (party.players.size >= 8) {
 
-        send(ws, {
-            type: "error",
-            message: "That party is full."
-        });
+    if (
+        party.players.size >= 8
+    ) {
+
+        send(
+            player.ws,
+            {
+
+                type:
+                    "error",
+
+                message:
+                    "Party is full."
+            }
+        );
 
         return;
     }
 
-    const id = makePlayerId();
-
-    party.players.set(id, {
-        id,
-        name: name || "Player",
-        ws,
-        x: 0,
-        y: 1.65,
-        z: 0,
-        rotation: 0
-    });
-
-    ws.playerId = id;
-    ws.partyCode = code;
-
-    send(ws, {
-        type: "partyJoined",
-        code,
-        playerId: id
-    });
-
-    broadcast(
-        party,
-        lobbyData(party)
-    );
 
     if (party.started) {
 
-        send(ws, {
-            type: "gameState",
-            cards: party.cards,
-            monster: party.monster,
+        send(
+            player.ws,
+            {
 
-            players: Array.from(
-                party.players.values()
-            ).map(p => ({
-                id: p.id,
-                name: p.name,
-                x: p.x,
-                y: p.y,
-                z: p.z,
-                rotation: p.rotation
-            }))
-        });
+                type:
+                    "error",
 
-    }
-}
-
-
-/*
-=========================================================
-START GAME
-=========================================================
-*/
-
-function startGame(ws) {
-
-    const party =
-        parties.get(ws.partyCode);
-
-    if (!party) return;
-
-    if (party.hostId !== ws.playerId) {
-
-        send(ws, {
-            type: "error",
-            message: "Only the host can start the game."
-        });
+                message:
+                    "The game has already started."
+            }
+        );
 
         return;
     }
 
-    party.started = true;
 
-    broadcast(party, {
-        type: "gameStarted"
-    });
+    player.name =
+        cleanName(name);
 
-    setTimeout(() => {
-
-        broadcast(party, {
-            type: "gameState",
-
-            cards: party.cards,
-
-            monster: party.monster,
-
-            players: Array.from(
-                party.players.values()
-            ).map(p => ({
-                id: p.id,
-                name: p.name,
-                x: p.x,
-                y: p.y,
-                z: p.z,
-                rotation: p.rotation
-            }))
-        });
-
-    }, 200);
-}
+    player.party =
+        code;
 
 
-/*
-=========================================================
-PLAYER POSITION
-=========================================================
-*/
+    party.players.set(
+        player.id,
+        player
+    );
 
-function updatePlayer(ws, data) {
 
-    const party =
-        parties.get(ws.partyCode);
+    send(
+        player.ws,
+        {
 
-    if (!party) return;
+            type:
+                "partyJoined",
 
-    const player =
-        party.players.get(ws.playerId);
+            playerId:
+                player.id,
 
-    if (!player) return;
-
-    player.x =
-        Number(data.x) || 0;
-
-    player.y =
-        Number(data.y) || 1.65;
-
-    player.z =
-        Number(data.z) || 0;
-
-    player.rotation =
-        Number(data.rotation) || 0;
-
-    broadcast(party, {
-        type: "playerUpdate",
-
-        player: {
-            id: player.id,
-            name: player.name,
-            x: player.x,
-            y: player.y,
-            z: player.z,
-            rotation: player.rotation
+            code
         }
-    });
+    );
+
+
+    sendLobby(
+        party
+    );
 }
 
 
-/*
-=========================================================
-CARD COLLECTION
-=========================================================
-*/
+// ============================================================
+// START GAME
+// ============================================================
 
-function collectCard(ws, cardId) {
+function startGame(
+    player
+) {
+
+    if (!player.party) {
+        return;
+    }
+
 
     const party =
-        parties.get(ws.partyCode);
-
-    if (!party) return;
-
-    const card =
-        party.cards.find(
-            c => c.id === Number(cardId)
+        parties.get(
+            player.party
         );
 
-    if (!card) return;
 
-    if (card.collected) return;
+    if (!party) {
+        return;
+    }
 
-    card.collected = true;
 
-    broadcast(party, {
-        type: "cardCollected",
-        cardId: card.id
-    });
+    if (
+        party.hostId !==
+        player.id
+    ) {
 
-    const allCollected =
-        party.cards.every(
-            c => c.collected
+        send(
+            player.ws,
+            {
+
+                type:
+                    "error",
+
+                message:
+                    "Only the host can start the game."
+            }
         );
 
-    if (allCollected) {
+        return;
+    }
 
-        broadcast(party, {
-            type: "allCardsCollected"
-        });
+
+    party.started =
+        true;
+
+    party.keyCollected =
+        false;
+
+
+    broadcast(
+        party,
+        {
+            type:
+                "gameStarted"
+        }
+    );
+}
+
+
+// ============================================================
+// GAME JOIN
+// ============================================================
+
+function gameJoin(
+    player,
+    code,
+    name
+) {
+
+    code =
+        String(
+            code || ""
+        )
+        .toUpperCase()
+        .trim();
+
+
+    const party =
+        parties.get(code);
+
+
+    if (!party) {
+
+        send(
+            player.ws,
+            {
+
+                type:
+                    "error",
+
+                message:
+                    "Party no longer exists."
+            }
+        );
+
+        return;
+    }
+
+
+    // If already connected through lobby,
+    // don't add a duplicate player.
+
+    if (
+        party.players.has(
+            player.id
+        )
+    ) {
+
+        player.name =
+            cleanName(name);
+
+    } else {
+
+        if (
+            party.players.size >= 8
+        ) {
+
+            send(
+                player.ws,
+                {
+
+                    type:
+                        "error",
+
+                    message:
+                        "Party is full."
+                }
+            );
+
+            return;
+        }
+
+        player.name =
+            cleanName(name);
+
+        player.party =
+            code;
+
+        party.players.set(
+            player.id,
+            player
+        );
+    }
+
+
+    send(
+        player.ws,
+        {
+
+            type:
+                "gameJoined",
+
+            playerId:
+                player.id
+        }
+    );
+
+
+    sendWorldState(
+        party
+    );
+
+
+    broadcastPlayers(
+        party
+    );
+}
+
+
+// ============================================================
+// PLAYER MOVEMENT
+// ============================================================
+
+function updatePlayer(
+    player,
+    data
+) {
+
+    if (!player.party) {
+        return;
+    }
+
+
+    const party =
+        parties.get(
+            player.party
+        );
+
+
+    if (!party) {
+        return;
+    }
+
+
+    const x =
+        Number(data.x);
+
+    const z =
+        Number(data.z);
+
+    const yaw =
+        Number(data.yaw);
+
+
+    if (
+        Number.isFinite(x)
+    ) {
+
+        player.x =
+            Math.max(
+                -59,
+                Math.min(
+                    59,
+                    x
+                )
+            );
+    }
+
+
+    if (
+        Number.isFinite(z)
+    ) {
+
+        player.z =
+            Math.max(
+                -59,
+                Math.min(
+                    59,
+                    z
+                )
+            );
+    }
+
+
+    if (
+        Number.isFinite(yaw)
+    ) {
+
+        player.yaw =
+            yaw;
     }
 }
 
 
-/*
-=========================================================
-PLAYER ESCAPES
-=========================================================
-*/
+// ============================================================
+// BROADCAST PLAYER POSITIONS
+// ============================================================
 
-function playerEscaped(ws) {
+setInterval(
+    () => {
 
-    const party =
-        parties.get(ws.partyCode);
+        for (
+            const party
+            of parties.values()
+        ) {
 
-    if (!party) return;
+            if (
+                !party.started
+            ) {
+                continue;
+            }
 
-    const player =
-        party.players.get(ws.playerId);
+            broadcastPlayers(
+                party
+            );
+        }
 
-    if (!player) return;
+    },
+    50
+);
 
-    broadcast(party, {
-        type: "playerEscaped",
-        playerName: player.name
-    });
+
+function broadcastPlayers(
+    party
+) {
+
+    broadcast(
+        party,
+        {
+
+            type:
+                "players",
+
+            players:
+                Array.from(
+                    party.players.values()
+                ).map(
+                    player => ({
+
+                        id:
+                            player.id,
+
+                        name:
+                            player.name,
+
+                        x:
+                            player.x,
+
+                        z:
+                            player.z,
+
+                        yaw:
+                            player.yaw
+                    })
+                )
+        }
+    );
 }
 
 
-/*
-=========================================================
-WEBSOCKET CONNECTION
-=========================================================
-*/
+// ============================================================
+// KEY
+// ============================================================
 
-wss.on("connection", ws => {
+function collectKey(
+    player
+) {
 
-    ws.on("message", raw => {
-
-        let data;
-
-        try {
-            data = JSON.parse(raw.toString());
-        } catch {
-            return;
-        }
-
-        switch (data.type) {
-
-            case "createParty":
-                createParty(
-                    ws,
-                    data.name
-                );
-                break;
-
-            case "joinParty":
-                joinParty(
-                    ws,
-                    data.code,
-                    data.name
-                );
-                break;
-
-            case "startGame":
-                startGame(ws);
-                break;
-
-            case "playerUpdate":
-                updatePlayer(
-                    ws,
-                    data
-                );
-                break;
-
-            case "collectCard":
-                collectCard(
-                    ws,
-                    data.cardId
-                );
-                break;
-
-            case "playerEscaped":
-                playerEscaped(ws);
-                break;
-        }
-    });
+    if (!player.party) {
+        return;
+    }
 
 
-    ws.on("close", () => {
-
-        const code = ws.partyCode;
-
-        if (!code) return;
-
-        const party =
-            parties.get(code);
-
-        if (!party) return;
-
-        party.players.delete(
-            ws.playerId
+    const party =
+        parties.get(
+            player.party
         );
 
-        if (party.players.size === 0) {
 
-            parties.delete(code);
-
-            return;
-        }
-
-        /*
-            If host leaves, give host
-            control to another player.
-        */
-
-        if (party.hostId === ws.playerId) {
-
-            const nextPlayer =
-                party.players.values().next().value;
-
-            party.hostId =
-                nextPlayer.id;
-        }
-
-        broadcast(
-            party,
-            lobbyData(party)
-        );
-    });
-});
+    if (!party) {
+        return;
+    }
 
 
-server.listen(PORT, () => {
+    if (
+        party.keyCollected
+    ) {
+        return;
+    }
 
-    console.log("");
-    console.log("================================");
-    console.log(" BACKROOMS MULTIPLAYER SERVER");
-    console.log("================================");
-    console.log("");
-    console.log(
-        `Server running on port ${PORT}`
+
+    party.keyCollected =
+        true;
+
+
+    sendWorldState(
+        party
     );
-    console.log("");
-});
+}
+
+
+function sendWorldState(
+    party
+) {
+
+    broadcast(
+        party,
+        {
+
+            type:
+                "worldState",
+
+            keyCollected:
+                party.keyCollected
+        }
+    );
+}
+
+
+// ============================================================
+// WIN / LOSE
+// ============================================================
+
+function gameWon(
+    player
+) {
+
+    if (!player.party) {
+        return;
+    }
+
+
+    const party =
+        parties.get(
+            player.party
+        );
+
+
+    if (!party) {
+        return;
+    }
+
+
+    broadcast(
+        party,
+        {
+
+            type:
+                "gameWon"
+        }
+    );
+}
+
+
+function gameOver(
+    player
+) {
+
+    if (!player.party) {
+        return;
+    }
+
+
+    const party =
+        parties.get(
+            player.party
+        );
+
+
+    if (!party) {
+        return;
+    }
+
+
+    broadcast(
+        party,
+        {
+
+            type:
+                "gameOver",
+
+            message:
+                "A player was caught."
+        }
+    );
+}
+
+
+// ============================================================
+// START SERVER
+// ============================================================
+
+server.listen(
+    PORT,
+    () => {
+
+        console.log(
+            `THE BACKROOMS SERVER RUNNING ON PORT ${PORT}`
+        );
+
+        console.log(
+            `http://localhost:${PORT}`
+        );
+    }
+);
