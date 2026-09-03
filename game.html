@@ -1,335 +1,532 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>THE BACKROOMS — Level 0</title>
+
+<title>THE BACKROOMS — LEVEL 0</title>
 
 <style>
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-    }
 
-    html, body {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #000;
-        font-family: Arial, Helvetica, sans-serif;
-    }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-    canvas {
-        display: block;
-    }
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, Helvetica, sans-serif;
+}
 
-    #hud {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        color: white;
-        z-index: 10;
-        text-shadow: 0 2px 4px #000;
-    }
+canvas {
+    display: block;
+}
 
-    #topLeft {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        font-size: 16px;
-        line-height: 1.8;
-    }
+#hud {
 
-    #level {
-        font-size: 25px;
-        font-weight: bold;
-        letter-spacing: 3px;
-    }
+    position: fixed;
 
-    #objective {
-        margin-top: 8px;
-        max-width: 350px;
-        color: #ddd;
-    }
+    inset: 0;
 
-    #bottomLeft {
-        position: absolute;
-        bottom: 20px;
-        left: 20px;
-        font-size: 14px;
-        color: #ddd;
-    }
+    pointer-events: none;
 
-    #crosshair {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        width: 8px;
-        height: 8px;
-        transform: translate(-50%, -50%);
-    }
+    color: white;
 
-    #crosshair::before,
-    #crosshair::after {
-        content: "";
-        position: absolute;
-        background: rgba(255,255,255,.7);
-    }
+    z-index: 10;
 
-    #crosshair::before {
-        width: 8px;
-        height: 1px;
-        top: 4px;
-        left: 0;
-    }
+    text-shadow:
+        0 2px 4px black;
+}
 
-    #crosshair::after {
-        width: 1px;
-        height: 8px;
-        top: 0;
-        left: 4px;
-    }
+#topLeft {
 
-    #bars {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        width: 180px;
-    }
+    position: absolute;
 
-    .barLabel {
-        font-size: 11px;
-        margin-bottom: 4px;
-        letter-spacing: 1px;
-    }
+    top: 18px;
 
-    .bar {
-        width: 100%;
-        height: 9px;
-        background: rgba(0,0,0,.7);
-        border: 1px solid rgba(255,255,255,.3);
-        margin-bottom: 9px;
-    }
+    left: 18px;
 
-    .fill {
-        width: 100%;
-        height: 100%;
-        transition: width .1s linear;
-    }
+    line-height: 1.8;
+}
 
-    #healthFill {
-        background: #b52b2b;
-    }
+#level {
 
-    #staminaFill {
-        background: #d6c84d;
-    }
+    font-size: 24px;
 
-    #cardCount {
-        color: #ffe95a;
-    }
+    font-weight: bold;
 
-    #flashlightStatus {
-        color: #ffe95a;
-    }
+    letter-spacing: 4px;
 
-    #danger {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 8;
-        opacity: 0;
-        background:
-            radial-gradient(
-                ellipse at center,
-                transparent 30%,
-                rgba(100,0,0,.15) 65%,
-                rgba(150,0,0,.65) 100%
-            );
-        transition: opacity .15s;
-    }
+    color: #ddd36d;
+}
 
-    #noise {
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        z-index: 7;
-        opacity: .035;
-        background-image:
-            repeating-linear-gradient(
-                0deg,
-                rgba(255,255,255,.3) 0px,
-                rgba(255,255,255,.3) 1px,
-                transparent 1px,
-                transparent 3px
-            );
-        mix-blend-mode: overlay;
-    }
+#party {
 
-    #startScreen,
-    #gameOver,
-    #winScreen {
-        position: fixed;
-        inset: 0;
-        z-index: 50;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        text-align: center;
-        background:
-            radial-gradient(circle at center, rgba(50,45,15,.2), rgba(0,0,0,.96));
-        color: white;
-    }
+    font-size: 12px;
 
-    #gameOver,
-    #winScreen {
-        display: none;
-    }
+    color: #999;
 
-    .title {
-        font-size: clamp(45px, 8vw, 100px);
-        letter-spacing: 12px;
-        font-weight: 900;
-        color: #d8ce72;
-        text-shadow:
-            0 0 8px #b5a94c,
-            0 0 35px rgba(220,205,90,.3);
-        margin-bottom: 15px;
-    }
+    letter-spacing: 2px;
+}
 
-    .subtitle {
-        font-size: 14px;
-        letter-spacing: 5px;
-        color: #aaa;
-        margin-bottom: 45px;
-    }
+#objective {
 
-    button {
-        border: 1px solid #bdb35d;
-        background: rgba(185,174,75,.1);
-        color: #eee;
-        padding: 15px 55px;
-        font-size: 18px;
-        letter-spacing: 5px;
-        cursor: pointer;
-        transition: .2s;
-    }
+    margin-top: 8px;
 
-    button:hover {
-        background: rgba(210,198,80,.25);
-        box-shadow: 0 0 30px rgba(220,205,90,.2);
-    }
+    max-width: 350px;
 
-    .warning {
-        max-width: 550px;
-        line-height: 1.7;
-        color: #999;
-        margin-bottom: 35px;
-    }
+    color: #ddd;
+}
 
-    #winScreen .title {
-        color: #d8ce72;
-    }
+#playersOnline {
 
-    #gameOver .title {
-        color: #9c3030;
-    }
+    margin-top: 8px;
+
+    font-size: 12px;
+
+    color: #999;
+}
+
+#crosshair {
+
+    position: absolute;
+
+    left: 50%;
+
+    top: 50%;
+
+    width: 8px;
+
+    height: 8px;
+
+    transform:
+        translate(-50%, -50%);
+}
+
+#crosshair::before,
+#crosshair::after {
+
+    content: "";
+
+    position: absolute;
+
+    background:
+        rgba(255,255,255,.7);
+}
+
+#crosshair::before {
+
+    width: 8px;
+
+    height: 1px;
+
+    top: 4px;
+
+    left: 0;
+}
+
+#crosshair::after {
+
+    width: 1px;
+
+    height: 8px;
+
+    top: 0;
+
+    left: 4px;
+}
+
+#bottomLeft {
+
+    position: absolute;
+
+    left: 18px;
+
+    bottom: 18px;
+
+    color: #bbb;
+
+    font-size: 12px;
+
+    line-height: 1.7;
+}
+
+#bars {
+
+    position: absolute;
+
+    right: 18px;
+
+    bottom: 18px;
+
+    width: 180px;
+}
+
+.label {
+
+    font-size: 10px;
+
+    margin-bottom: 4px;
+
+    letter-spacing: 2px;
+}
+
+.bar {
+
+    height: 9px;
+
+    width: 100%;
+
+    background:
+        rgba(0,0,0,.7);
+
+    border:
+        1px solid
+        rgba(255,255,255,.25);
+
+    margin-bottom: 10px;
+}
+
+.fill {
+
+    height: 100%;
+
+    width: 100%;
+}
+
+#health {
+    background: #a62b2b;
+}
+
+#stamina {
+    background: #d4c947;
+}
+
+#danger {
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 8;
+
+    opacity: 0;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            transparent 25%,
+            rgba(90,0,0,.15) 60%,
+            rgba(130,0,0,.75) 100%
+        );
+
+    transition:
+        opacity .1s;
+}
+
+#noise {
+
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    z-index: 7;
+
+    opacity: .035;
+
+    background:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.25) 0px,
+            rgba(255,255,255,.25) 1px,
+            transparent 1px,
+            transparent 4px
+        );
+}
+
+#message {
+
+    position: fixed;
+
+    left: 50%;
+
+    top: 18%;
+
+    transform:
+        translateX(-50%);
+
+    color: #ddd36d;
+
+    font-size: 18px;
+
+    letter-spacing: 3px;
+
+    opacity: 0;
+
+    transition:
+        opacity .3s;
+
+    z-index: 20;
+}
+
+#loading {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    background: #090804;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-direction: column;
+
+    color: white;
+}
+
+#loadingTitle {
+
+    color: #d8ce72;
+
+    font-size: 45px;
+
+    letter-spacing: 10px;
+
+    margin-bottom: 20px;
+}
+
+#loadingText {
+
+    color: #777;
+
+    font-size: 13px;
+
+    letter-spacing: 3px;
+}
+
+#win,
+#lose {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    display: none;
+
+    justify-content: center;
+
+    align-items: center;
+
+    flex-direction: column;
+
+    text-align: center;
+
+    background:
+        rgba(0,0,0,.94);
+
+    color: white;
+}
+
+.big {
+
+    font-size:
+        clamp(50px, 10vw, 100px);
+
+    font-weight: 900;
+
+    letter-spacing: 10px;
+
+    color: #d8ce72;
+
+    margin-bottom: 20px;
+}
+
+#lose .big {
+    color: #a52e2e;
+}
+
+.overlayText {
+
+    color: #999;
+
+    margin-bottom: 35px;
+
+    line-height: 1.7;
+}
+
+button {
+
+    padding: 15px 45px;
+
+    background:
+        rgba(220,205,90,.08);
+
+    border:
+        1px solid #aaa04f;
+
+    color: white;
+
+    cursor: pointer;
+
+    letter-spacing: 3px;
+}
+
 </style>
+
 </head>
 
 <body>
 
+
+<div id="loading">
+
+    <div id="loadingTitle">
+        LEVEL 0
+    </div>
+
+    <div id="loadingText">
+        CONNECTING...
+    </div>
+
+</div>
+
+
 <div id="hud">
 
     <div id="topLeft">
-        <div id="level">LEVEL 0</div>
+
+        <div id="level">
+            LEVEL 0
+        </div>
+
+        <div id="party">
+            PARTY: <span id="partyCode">-----</span>
+        </div>
+
         <div>
             EXIT CARDS:
-            <span id="cardCount">0 / 3</span>
+            <span id="cardCount">
+                0 / 3
+            </span>
         </div>
 
         <div id="objective">
             Find the three exit cards.
-            Then find the EXIT door.
         </div>
+
+        <div id="playersOnline">
+            PLAYERS: 1
+        </div>
+
     </div>
+
 
     <div id="crosshair"></div>
 
+
+    <div id="message"></div>
+
+
     <div id="bottomLeft">
-        WASD — Move<br>
-        SHIFT — Run<br>
-        F — Flashlight<br>
-        ESC — Release mouse
-        <br>
-        <span id="flashlightStatus">FLASHLIGHT: ON</span>
+
+        WASD — MOVE<br>
+        SHIFT — RUN<br>
+        F — FLASHLIGHT<br>
+        CLICK — MOUSE LOOK<br>
+        ESC — RELEASE MOUSE
+
     </div>
+
 
     <div id="bars">
-        <div class="barLabel">HEALTH</div>
-        <div class="bar">
-            <div class="fill" id="healthFill"></div>
+
+        <div class="label">
+            HEALTH
         </div>
 
-        <div class="barLabel">STAMINA</div>
         <div class="bar">
-            <div class="fill" id="staminaFill"></div>
+            <div
+                class="fill"
+                id="health"
+            ></div>
         </div>
+
+
+        <div class="label">
+            STAMINA
+        </div>
+
+        <div class="bar">
+            <div
+                class="fill"
+                id="stamina"
+            ></div>
+        </div>
+
     </div>
 
 </div>
+
 
 <div id="danger"></div>
+
 <div id="noise"></div>
 
-<div id="startScreen">
 
-    <div class="title">LEVEL 0</div>
+<div id="win">
 
-    <div class="subtitle">
-        THE BACKROOMS
+    <div class="big">
+        ESCAPED
     </div>
 
-    <div class="warning">
-        You don't remember entering this place.<br>
-        The lights have been buzzing for hours.<br>
-        Somewhere in the maze, something is moving.
+    <div class="overlayText">
+        Your party escaped Level 0.
+        <br>
+        But the buzzing followed you.
     </div>
 
-    <button id="startButton">ENTER</button>
+    <button onclick="location.href='index.html'">
+        MAIN MENU
+    </button>
 
 </div>
 
-<div id="gameOver">
 
-    <div class="title">LOST</div>
+<div id="lose">
 
-    <div class="subtitle">
-        IT FOUND YOU
+    <div class="big">
+        LOST
     </div>
 
-    <button onclick="location.reload()">TRY AGAIN</button>
+    <div class="overlayText">
+        Something found you.
+    </div>
+
+    <button onclick="location.reload()">
+        TRY AGAIN
+    </button>
 
 </div>
 
-<div id="winScreen">
-
-    <div class="title">ESCAPED</div>
-
-    <div class="subtitle">
-        LEVEL 0 COMPLETE
-    </div>
-
-    <div class="warning">
-        You found the exit.<br>
-        But you can still hear the buzzing.
-    </div>
-
-    <button onclick="location.reload()">PLAY AGAIN</button>
-
-</div>
 
 <script type="importmap">
 {
@@ -339,260 +536,459 @@
 }
 </script>
 
+
 <script type="module">
 
 import * as THREE from "three";
 
-/* =========================================================
-   BASIC SETUP
-========================================================= */
 
-const scene = new THREE.Scene();
+/*
+=========================================================
+SERVER CONNECTION
+=========================================================
+*/
 
-scene.background = new THREE.Color(0x14130d);
+const params =
+    new URLSearchParams(
+        location.search
+    );
 
-scene.fog = new THREE.FogExp2(
-    0x27240f,
-    0.018
-);
-
-const camera = new THREE.PerspectiveCamera(
-    75,
-    innerWidth / innerHeight,
-    0.05,
-    150
-);
-
-camera.rotation.order = "YXZ";
-
-const renderer = new THREE.WebGLRenderer({
-    antialias: true
-});
-
-renderer.setSize(innerWidth, innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-
-renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-document.body.appendChild(renderer.domElement);
+const partyCode =
+    params.get("party");
 
 
-/* =========================================================
-   GAME VARIABLES
-========================================================= */
+if (!partyCode) {
 
-const clock = new THREE.Clock();
-
-const keys = {};
-
-let gameStarted = false;
-let gameEnded = false;
-
-let health = 100;
-let stamina = 100;
-
-let flashlightOn = true;
-
-let pitch = 0;
-let yaw = 0;
-
-let bobTime = 0;
-let footstepsTimer = 0;
-
-let scareTimer = 0;
-
-const playerHeight = 1.65;
-const playerRadius = 0.35;
-
-const velocity = new THREE.Vector3();
-
-const walls = [];
-const lights = [];
-const cards = [];
-
-let exitDoor;
-let monster;
-
-let collectedCards = 0;
-
-
-/* =========================================================
-   PROCEDURAL TEXTURES
-========================================================= */
-
-function makeWallpaperTexture() {
-
-    const canvas = document.createElement("canvas");
-
-    canvas.width = 256;
-    canvas.height = 256;
-
-    const ctx = canvas.getContext("2d");
-
-    ctx.fillStyle = "#d8ce72";
-    ctx.fillRect(0, 0, 256, 256);
-
-    // subtle paper noise
-    for (let i = 0; i < 5000; i++) {
-
-        const x = Math.random() * 256;
-        const y = Math.random() * 256;
-
-        const shade = 100 + Math.floor(Math.random() * 80);
-
-        ctx.fillStyle =
-            `rgba(${shade + 80},${shade + 70},${shade},${Math.random() * .08})`;
-
-        ctx.fillRect(x, y, 1, 1);
-    }
-
-    // vertical wallpaper seams
-    for (let x = 0; x < 256; x += 64) {
-
-        ctx.fillStyle = "rgba(80,70,25,.12)";
-        ctx.fillRect(x, 0, 2, 256);
-
-        ctx.fillStyle = "rgba(255,255,210,.12)";
-        ctx.fillRect(x + 2, 0, 2, 256);
-    }
-
-    // horizontal texture
-    for (let y = 0; y < 256; y += 14) {
-
-        ctx.fillStyle = "rgba(100,90,35,.025)";
-        ctx.fillRect(0, y, 256, 1);
-    }
-
-    const texture = new THREE.CanvasTexture(canvas);
-
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-
-    texture.repeat.set(2, 2);
-
-    return texture;
+    location.href =
+        "index.html";
 }
 
 
-function makeCarpetTexture() {
+let socket;
 
-    const canvas = document.createElement("canvas");
+let myId = null;
 
-    canvas.width = 256;
-    canvas.height = 256;
+let gameReady = false;
 
-    const ctx = canvas.getContext("2d");
+let gameEnded = false;
 
-    ctx.fillStyle = "#655f32";
-    ctx.fillRect(0, 0, 256, 256);
 
-    for (let i = 0; i < 15000; i++) {
+function connect() {
 
-        const x = Math.random() * 256;
-        const y = Math.random() * 256;
+    const protocol =
+        location.protocol === "https:"
+        ? "wss:"
+        : "ws:";
 
-        const v = 50 + Math.random() * 40;
+    socket = new WebSocket(
+        `${protocol}//${location.host}`
+    );
+
+
+    socket.onopen = () => {
+
+        send({
+            type: "joinParty",
+            code: partyCode,
+            name:
+                localStorage.getItem(
+                    "playerName"
+                ) || "Player"
+        });
+    };
+
+
+    socket.onmessage = event => {
+
+        const data =
+            JSON.parse(event.data);
+
+        handleServerMessage(data);
+    };
+
+
+    socket.onerror = () => {
+
+        document.getElementById(
+            "loadingText"
+        ).textContent =
+            "SERVER CONNECTION FAILED";
+    };
+
+
+    socket.onclose = () => {
+
+        if (!gameEnded) {
+
+            showMessage(
+                "CONNECTION LOST"
+            );
+        }
+    };
+}
+
+
+function send(data) {
+
+    if (
+        socket &&
+        socket.readyState === WebSocket.OPEN
+    ) {
+
+        socket.send(
+            JSON.stringify(data)
+        );
+    }
+}
+
+
+/*
+=========================================================
+THREE.JS
+=========================================================
+*/
+
+const scene =
+    new THREE.Scene();
+
+scene.background =
+    new THREE.Color(
+        0x15130b
+    );
+
+scene.fog =
+    new THREE.FogExp2(
+        0x29250f,
+        .019
+    );
+
+
+const camera =
+    new THREE.PerspectiveCamera(
+        75,
+        innerWidth / innerHeight,
+        .05,
+        150
+    );
+
+camera.rotation.order =
+    "YXZ";
+
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias: true
+    });
+
+renderer.setSize(
+    innerWidth,
+    innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(
+        devicePixelRatio,
+        2
+    )
+);
+
+renderer.shadowMap.enabled = true;
+
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+/*
+=========================================================
+GAME VARIABLES
+=========================================================
+*/
+
+const clock =
+    new THREE.Clock();
+
+const walls = [];
+
+const lights = [];
+
+const cards = [];
+
+const otherPlayers = new Map();
+
+let health = 100;
+
+let stamina = 100;
+
+let yaw = 0;
+
+let pitch = 0;
+
+let flashlightOn = true;
+
+let bobTime = 0;
+
+let footsteps = 0;
+
+let collectedCards = 0;
+
+let cardsFromServer = [];
+
+let monsterData = {
+    x: 36,
+    z: 30
+};
+
+let monster;
+
+const keys = {};
+
+const CELL = 4;
+
+const GRID = 25;
+
+const mapSize =
+    CELL * GRID;
+
+const offset =
+    mapSize / 2;
+
+const playerHeight = 1.65;
+
+const radius = .35;
+
+
+/*
+=========================================================
+TEXTURES
+=========================================================
+*/
+
+function wallpaperTexture() {
+
+    const c =
+        document.createElement(
+            "canvas"
+        );
+
+    c.width = 256;
+    c.height = 256;
+
+    const ctx =
+        c.getContext("2d");
+
+    ctx.fillStyle =
+        "#d6cc70";
+
+    ctx.fillRect(
+        0,
+        0,
+        256,
+        256
+    );
+
+    for (
+        let i = 0;
+        i < 6000;
+        i++
+    ) {
+
+        const x =
+            Math.random() * 256;
+
+        const y =
+            Math.random() * 256;
 
         ctx.fillStyle =
-            `rgba(${v + 30},${v + 25},${v},${Math.random() * .25})`;
+            `rgba(80,70,20,${Math.random() * .07})`;
 
         ctx.fillRect(
             x,
             y,
-            Math.random() * 2 + .5,
-            Math.random() * 2 + .5
+            1,
+            1
         );
     }
 
-    for (let y = 0; y < 256; y += 8) {
+    for (
+        let x = 0;
+        x < 256;
+        x += 64
+    ) {
 
-        ctx.fillStyle = "rgba(20,20,5,.06)";
-        ctx.fillRect(0, y, 256, 1);
+        ctx.fillStyle =
+            "rgba(80,70,20,.13)";
+
+        ctx.fillRect(
+            x,
+            0,
+            2,
+            256
+        );
     }
 
-    const texture = new THREE.CanvasTexture(canvas);
+    const texture =
+        new THREE.CanvasTexture(c);
 
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
+    texture.wrapS =
+        THREE.RepeatWrapping;
 
-    texture.repeat.set(18, 18);
+    texture.wrapT =
+        THREE.RepeatWrapping;
+
+    texture.repeat.set(
+        2,
+        2
+    );
 
     return texture;
 }
 
-const wallpaperTexture = makeWallpaperTexture();
-const carpetTexture = makeCarpetTexture();
+
+function carpetTexture() {
+
+    const c =
+        document.createElement(
+            "canvas"
+        );
+
+    c.width = 256;
+    c.height = 256;
+
+    const ctx =
+        c.getContext("2d");
+
+    ctx.fillStyle =
+        "#625c30";
+
+    ctx.fillRect(
+        0,
+        0,
+        256,
+        256
+    );
+
+    for (
+        let i = 0;
+        i < 16000;
+        i++
+    ) {
+
+        const x =
+            Math.random() * 256;
+
+        const y =
+            Math.random() * 256;
+
+        ctx.fillStyle =
+            `rgba(120,115,70,${Math.random() * .2})`;
+
+        ctx.fillRect(
+            x,
+            y,
+            1,
+            1
+        );
+    }
+
+    const texture =
+        new THREE.CanvasTexture(c);
+
+    texture.wrapS =
+        THREE.RepeatWrapping;
+
+    texture.wrapT =
+        THREE.RepeatWrapping;
+
+    texture.repeat.set(
+        18,
+        18
+    );
+
+    return texture;
+}
 
 
-/* =========================================================
-   MATERIALS
-========================================================= */
-
-const wallMaterial = new THREE.MeshStandardMaterial({
-    map: wallpaperTexture,
-    roughness: 1
-});
-
-const carpetMaterial = new THREE.MeshStandardMaterial({
-    map: carpetTexture,
-    roughness: 1
-});
-
-const ceilingMaterial = new THREE.MeshStandardMaterial({
-    color: 0xddd9c0,
-    roughness: 1
-});
+const wallMat =
+    new THREE.MeshStandardMaterial({
+        map: wallpaperTexture(),
+        roughness: 1
+    });
 
 
-/* =========================================================
-   FLOOR
-========================================================= */
+const floorMat =
+    new THREE.MeshStandardMaterial({
+        map: carpetTexture(),
+        roughness: 1
+    });
 
-const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(110, 110),
-    carpetMaterial
-);
 
-floor.rotation.x = -Math.PI / 2;
-floor.position.y = 0;
+/*
+=========================================================
+FLOOR / CEILING
+=========================================================
+*/
 
-floor.receiveShadow = true;
+const floor =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            110,
+            110
+        ),
+        floorMat
+    );
+
+floor.rotation.x =
+    -Math.PI / 2;
 
 scene.add(floor);
 
 
-/* =========================================================
-   CEILING
-========================================================= */
+const ceiling =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            110,
+            110
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0xd5d2bd
+        })
+    );
 
-const ceiling = new THREE.Mesh(
-    new THREE.PlaneGeometry(110, 110),
-    ceilingMaterial
-);
+ceiling.rotation.x =
+    Math.PI / 2;
 
-ceiling.rotation.x = Math.PI / 2;
-ceiling.position.y = 3.6;
+ceiling.position.y =
+    3.6;
 
 scene.add(ceiling);
 
 
-/* =========================================================
-   WALL CREATION
-========================================================= */
+/*
+=========================================================
+WALLS
+=========================================================
+*/
 
-function addWall(x, z, width, depth) {
+function addWall(
+    x,
+    z,
+    width,
+    depth
+) {
 
-    const mesh = new THREE.Mesh(
-        new THREE.BoxGeometry(
-            width,
-            3.6,
-            depth
-        ),
-        wallMaterial
-    );
+    const mesh =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                width,
+                3.6,
+                depth
+            ),
+            wallMat
+        );
 
     mesh.position.set(
         x,
@@ -601,6 +997,7 @@ function addWall(x, z, width, depth) {
     );
 
     mesh.castShadow = true;
+
     mesh.receiveShadow = true;
 
     scene.add(mesh);
@@ -611,59 +1008,77 @@ function addWall(x, z, width, depth) {
         minZ: z - depth / 2,
         maxZ: z + depth / 2
     });
-
-    return mesh;
 }
 
 
-/* =========================================================
-   BUILD BACKROOMS MAZE
-========================================================= */
+/*
+    Outer walls
+*/
 
-const CELL = 4;
-const GRID = 25;
+addWall(
+    0,
+    -offset,
+    mapSize,
+    .3
+);
 
-const mapSize = GRID * CELL;
+addWall(
+    0,
+    offset,
+    mapSize,
+    .3
+);
 
-const centerOffset = mapSize / 2;
+addWall(
+    -offset,
+    0,
+    .3,
+    mapSize
+);
 
-const mazeWalls = [];
-
-// Outer walls
-addWall(0, -centerOffset, mapSize, .3);
-addWall(0, centerOffset, mapSize, .3);
-addWall(-centerOffset, 0, .3, mapSize);
-addWall(centerOffset, 0, .3, mapSize);
+addWall(
+    offset,
+    0,
+    .3,
+    mapSize
+);
 
 
 /*
-    Create internal walls.
-
-    Most spaces remain open.
-    This makes it feel like the giant,
-    confusing rooms of Level 0.
+    Internal maze walls
 */
 
-for (let x = 1; x < GRID; x++) {
+for (
+    let x = 1;
+    x < GRID;
+    x++
+) {
 
-    for (let z = 1; z < GRID; z++) {
+    for (
+        let z = 1;
+        z < GRID;
+        z++
+    ) {
 
-        if (Math.random() < 0.23) {
+        if (
+            Math.random() < .23
+        ) {
 
-            const worldX =
-                x * CELL - centerOffset;
+            const wx =
+                x * CELL -
+                offset;
 
-            const worldZ =
-                z * CELL - centerOffset;
+            const wz =
+                z * CELL -
+                offset;
 
-            const horizontal =
-                Math.random() > .5;
-
-            if (horizontal) {
+            if (
+                Math.random() > .5
+            ) {
 
                 addWall(
-                    worldX + CELL / 2,
-                    worldZ,
+                    wx + CELL / 2,
+                    wz,
                     CELL,
                     .22
                 );
@@ -671,8 +1086,8 @@ for (let x = 1; x < GRID; x++) {
             } else {
 
                 addWall(
-                    worldX,
-                    worldZ + CELL / 2,
+                    wx,
+                    wz + CELL / 2,
                     .22,
                     CELL
                 );
@@ -682,64 +1097,36 @@ for (let x = 1; x < GRID; x++) {
 }
 
 
-/* =========================================================
-   EXTRA COLUMNS / SUPPORTS
-========================================================= */
+/*
+=========================================================
+LIGHTS
+=========================================================
+*/
 
-for (let i = 0; i < 35; i++) {
-
-    const x =
-        Math.floor(Math.random() * (GRID - 3)) * CELL
-        - centerOffset + 2;
-
-    const z =
-        Math.floor(Math.random() * (GRID - 3)) * CELL
-        - centerOffset + 2;
-
-    // Don't put them too close to spawn
-    if (Math.abs(x) < 7 && Math.abs(z) < 7) continue;
-
-    const pillar = new THREE.Mesh(
-        new THREE.BoxGeometry(.28, 3.6, .28),
-        wallMaterial
-    );
-
-    pillar.position.set(x, 1.8, z);
-
-    scene.add(pillar);
-
-    walls.push({
-        minX: x - .14,
-        maxX: x + .14,
-        minZ: z - .14,
-        maxZ: z + .14
-    });
-}
-
-
-/* =========================================================
-   LIGHTING
-========================================================= */
-
-const ambient = new THREE.HemisphereLight(
-    0xfff5c7,
-    0x17130a,
-    .35
+scene.add(
+    new THREE.HemisphereLight(
+        0xfff5c0,
+        0x17130a,
+        .35
+    )
 );
 
-scene.add(ambient);
 
+function addLight(x, z) {
 
-function addCeilingLight(x, z) {
-
-    const fixture = new THREE.Mesh(
-        new THREE.BoxGeometry(2.1, .08, .35),
-        new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            emissive: 0xffffcc,
-            emissiveIntensity: 2
-        })
-    );
+    const fixture =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                2.1,
+                .08,
+                .35
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                emissive: 0xffffcc,
+                emissiveIntensity: 2
+            })
+        );
 
     fixture.position.set(
         x,
@@ -749,142 +1136,169 @@ function addCeilingLight(x, z) {
 
     scene.add(fixture);
 
-    const light = new THREE.PointLight(
-        0xfff3bd,
-        1.6,
-        12,
-        2
-    );
+
+    const light =
+        new THREE.PointLight(
+            0xfff1b0,
+            1.5,
+            12
+        );
 
     light.position.set(
         x,
-        3.25,
+        3.2,
         z
     );
-
-    light.castShadow = true;
 
     scene.add(light);
 
     lights.push({
         light,
         fixture,
-        base: 1.6,
+        base: 1.5,
         flicker: 0
     });
 }
 
 
-// Regular fluorescent grid
-for (let x = -44; x <= 44; x += 8) {
+for (
+    let x = -44;
+    x <= 44;
+    x += 8
+) {
 
-    for (let z = -44; z <= 44; z += 8) {
+    for (
+        let z = -44;
+        z <= 44;
+        z += 8
+    ) {
 
-        if (Math.random() < .88) {
+        if (
+            Math.random() < .9
+        ) {
 
-            addCeilingLight(x, z);
+            addLight(
+                x,
+                z
+            );
         }
     }
 }
 
 
-/* =========================================================
-   EXIT DOOR
-========================================================= */
+/*
+=========================================================
+EXIT
+=========================================================
+*/
 
-exitDoor = new THREE.Group();
+const exit =
+    new THREE.Group();
 
-const door = new THREE.Mesh(
-    new THREE.BoxGeometry(1.8, 3, .18),
-    new THREE.MeshStandardMaterial({
-        color: 0x191919,
-        roughness: .8
-    })
-);
 
-door.position.y = 1.5;
+const exitDoor =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.8,
+            3,
+            .2
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x161616
+        })
+    );
 
-exitDoor.add(door);
+exitDoor.position.y =
+    1.5;
 
-const exitSign = new THREE.Mesh(
-    new THREE.BoxGeometry(1.7, .4, .08),
-    new THREE.MeshStandardMaterial({
-        color: 0x330000,
-        emissive: 0xff0000,
-        emissiveIntensity: 1.5
-    })
-);
+exit.add(exitDoor);
 
-exitSign.position.set(
-    0,
-    3.15,
-    .1
-);
 
-exitDoor.add(exitSign);
+const sign =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.7,
+            .4,
+            .1
+        ),
+        new THREE.MeshStandardMaterial({
+            color: 0x330000,
+            emissive: 0xff0000,
+            emissiveIntensity: 2
+        })
+    );
 
-exitDoor.position.set(
+sign.position.y =
+    3.1;
+
+exit.add(sign);
+
+exit.position.set(
     44,
     0,
     44
 );
 
-scene.add(exitDoor);
+scene.add(exit);
 
 
-/* =========================================================
-   EXIT LIGHT
-========================================================= */
-
-const exitLight = new THREE.PointLight(
-    0xff2222,
-    .8,
-    7
+scene.add(
+    new THREE.PointLight(
+        0xff1111,
+        1,
+        7
+    )
 );
 
-exitLight.position.set(
-    44,
-    3,
-    43
-);
 
-scene.add(exitLight);
+/*
+=========================================================
+CARDS
+=========================================================
+*/
+
+function createCard(
+    id,
+    x,
+    z
+) {
+
+    const group =
+        new THREE.Group();
 
 
-/* =========================================================
-   CARDS
-========================================================= */
+    const mesh =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                .55,
+                .08,
+                .8
+            ),
+            new THREE.MeshStandardMaterial({
+                color: 0xffdc35,
+                emissive: 0xffc800,
+                emissiveIntensity: 1.5
+            })
+        );
 
-function createCard(x, z, number) {
+    mesh.position.y =
+        1.05;
 
-    const group = new THREE.Group();
+    group.add(mesh);
 
-    const card = new THREE.Mesh(
-        new THREE.BoxGeometry(
-            .55,
-            .08,
-            .8
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0xffdf35,
-            emissive: 0xffcc00,
-            emissiveIntensity: 1.5
-        })
-    );
 
-    card.position.y = 1.1;
+    const glow =
+        new THREE.PointLight(
+            0xffd900,
+            .7,
+            4
+        );
 
-    group.add(card);
+    glow.position.y =
+        1;
 
-    const light = new THREE.PointLight(
-        0xffdd22,
-        .7,
-        4
-    );
+    group.add(glow);
 
-    light.position.y = 1;
-
-    group.add(light);
 
     group.position.set(
         x,
@@ -895,116 +1309,110 @@ function createCard(x, z, number) {
     scene.add(group);
 
     cards.push({
+        id,
         group,
-        collected: false,
-        number
+        collected: false
     });
 }
 
 
+createCard(
+    0,
+    -32,
+    -28
+);
+
+createCard(
+    1,
+    28,
+    -16
+);
+
+createCard(
+    2,
+    -20,
+    32
+);
+
+
 /*
-    Keep cards far apart.
+=========================================================
+MONSTER
+=========================================================
 */
-
-createCard(-32, -28, 1);
-createCard(28, -16, 2);
-createCard(-20, 32, 3);
-
-
-/* =========================================================
-   MONSTER
-========================================================= */
 
 function createMonster() {
 
-    const group = new THREE.Group();
+    const group =
+        new THREE.Group();
 
-    // Body
-    const body = new THREE.Mesh(
-        new THREE.CapsuleGeometry(
-            .34,
-            1.5,
-            5,
-            10
-        ),
+
+    const material =
         new THREE.MeshStandardMaterial({
-            color: 0x050505,
-            roughness: 1
-        })
-    );
+            color: 0x030303
+        });
 
-    body.position.y = 1.45;
+
+    const body =
+        new THREE.Mesh(
+            new THREE.CapsuleGeometry(
+                .34,
+                1.5,
+                5,
+                10
+            ),
+            material
+        );
+
+    body.position.y =
+        1.4;
 
     group.add(body);
 
-    // Head
-    const head = new THREE.Mesh(
-        new THREE.SphereGeometry(
-            .4,
-            16,
-            16
-        ),
-        new THREE.MeshStandardMaterial({
-            color: 0x030303,
-            roughness: 1
-        })
-    );
 
-    head.position.y = 2.55;
+    const head =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .4,
+                16,
+                16
+            ),
+            material
+        );
+
+    head.position.y =
+        2.5;
 
     group.add(head);
 
-    // Eyes
-    for (const x of [-.14, .14]) {
 
-        const eye = new THREE.Mesh(
-            new THREE.SphereGeometry(
-                .045,
-                8,
-                8
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0xff2222,
-                emissive: 0xff0000,
-                emissiveIntensity: 5
-            })
-        );
+    for (
+        const x of [-.14,.14]
+    ) {
+
+        const eye =
+            new THREE.Mesh(
+                new THREE.SphereGeometry(
+                    .045,
+                    8,
+                    8
+                ),
+                new THREE.MeshStandardMaterial({
+                    color: 0xff1111,
+                    emissive: 0xff0000,
+                    emissiveIntensity: 5
+                })
+            );
 
         eye.position.set(
             x,
-            2.58,
+            2.55,
             -.37
         );
 
         group.add(eye);
     }
 
-    // Arms
-    for (const x of [-.55, .55]) {
-
-        const arm = new THREE.Mesh(
-            new THREE.CapsuleGeometry(
-                .11,
-                1.2,
-                4,
-                8
-            ),
-            new THREE.MeshStandardMaterial({
-                color: 0x020202
-            })
-        );
-
-        arm.position.set(
-            x,
-            1.45,
-            0
-        );
-
-        arm.rotation.z =
-            x > 0 ? -.08 : .08;
-
-        group.add(arm);
-    }
 
     group.position.set(
         36,
@@ -1012,40 +1420,39 @@ function createMonster() {
         30
     );
 
-    group.scale.setScalar(.9);
-
     scene.add(group);
 
     return group;
 }
 
-monster = createMonster();
+
+monster =
+    createMonster();
 
 
-/* =========================================================
-   FLASHLIGHT
-========================================================= */
+/*
+=========================================================
+FLASHLIGHT
+=========================================================
+*/
 
-const flashlight = new THREE.SpotLight(
-    0xffffee,
-    12,
-    26,
-    Math.PI / 7,
-    .45,
-    1.5
+const flashlight =
+    new THREE.SpotLight(
+        0xffffee,
+        12,
+        28,
+        Math.PI / 7,
+        .45,
+        1.5
+    );
+
+camera.add(
+    flashlight
 );
 
-flashlight.position.set(
-    0,
-    0,
-    0
-);
 
-flashlight.castShadow = true;
-
-camera.add(flashlight);
-
-const flashlightTarget = new THREE.Object3D();
+const flashlightTarget =
+    new THREE.Object3D();
 
 flashlightTarget.position.set(
     0,
@@ -1053,16 +1460,15 @@ flashlightTarget.position.set(
     -10
 );
 
-camera.add(flashlightTarget);
+camera.add(
+    flashlightTarget
+);
 
-flashlight.target = flashlightTarget;
+flashlight.target =
+    flashlightTarget;
 
 scene.add(camera);
 
-
-/* =========================================================
-   PLAYER START
-========================================================= */
 
 camera.position.set(
     0,
@@ -1071,19 +1477,415 @@ camera.position.set(
 );
 
 
-/* =========================================================
-   COLLISION
-========================================================= */
+/*
+=========================================================
+OTHER PLAYERS
+=========================================================
+*/
 
-function collides(x, z) {
+function createOtherPlayer(
+    player
+) {
 
-    for (const wall of walls) {
+    if (
+        otherPlayers.has(
+            player.id
+        )
+    ) {
+
+        return otherPlayers.get(
+            player.id
+        );
+    }
+
+
+    const group =
+        new THREE.Group();
+
+
+    const body =
+        new THREE.Mesh(
+            new THREE.CapsuleGeometry(
+                .3,
+                1.1,
+                5,
+                8
+            ),
+            new THREE.MeshStandardMaterial({
+                color:
+                    new THREE.Color()
+                        .setHSL(
+                            Math.random(),
+                            .6,
+                            .45
+                        )
+            })
+        );
+
+    body.position.y =
+        1.1;
+
+    group.add(body);
+
+
+    const head =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                .35,
+                12,
+                12
+            ),
+            body.material
+        );
+
+    head.position.y =
+        2.1;
+
+    group.add(head);
+
+
+    /*
+        Name tag
+    */
+
+    const canvas =
+        document.createElement(
+            "canvas"
+        );
+
+    canvas.width = 512;
+    canvas.height = 128;
+
+    const ctx =
+        canvas.getContext("2d");
+
+    ctx.fillStyle =
+        "white";
+
+    ctx.font =
+        "bold 38px Arial";
+
+    ctx.textAlign =
+        "center";
+
+    ctx.fillText(
+        player.name,
+        256,
+        70
+    );
+
+    const texture =
+        new THREE.CanvasTexture(
+            canvas
+        );
+
+    const tag =
+        new THREE.Sprite(
+            new THREE.SpriteMaterial({
+                map: texture,
+                transparent: true
+            })
+        );
+
+    tag.scale.set(
+        3,
+        .75,
+        1
+    );
+
+    tag.position.y =
+        3;
+
+    group.add(tag);
+
+
+    scene.add(group);
+
+    otherPlayers.set(
+        player.id,
+        group
+    );
+
+    return group;
+}
+
+
+/*
+=========================================================
+SERVER MESSAGES
+=========================================================
+*/
+
+function handleServerMessage(
+    data
+) {
+
+    switch (data.type) {
+
+        case "partyJoined":
+
+            myId =
+                data.playerId;
+
+            document.getElementById(
+                "partyCode"
+            ).textContent =
+                partyCode;
+
+            break;
+
+
+        case "lobby":
+
+            document.getElementById(
+                "playersOnline"
+            ).textContent =
+                `PLAYERS: ${data.players.length}`;
+
+            break;
+
+
+        case "gameStarted":
+
+            break;
+
+
+        case "gameState":
+
+            cardsFromServer =
+                data.cards;
+
+            monsterData =
+                data.monster;
+
+            for (
+                const card of data.cards
+            ) {
+
+                const local =
+                    cards.find(
+                        c =>
+                            c.id === card.id
+                    );
+
+                if (
+                    local &&
+                    card.collected
+                ) {
+
+                    local.collected =
+                        true;
+
+                    local.group.visible =
+                        false;
+                }
+            }
+
+
+            for (
+                const player
+                of data.players
+            ) {
+
+                if (
+                    player.id === myId
+                ) {
+
+                    camera.position.set(
+                        player.x,
+                        player.y,
+                        player.z
+                    );
+
+                } else {
+
+                    const other =
+                        createOtherPlayer(
+                            player
+                        );
+
+                    other.position.set(
+                        player.x,
+                        0,
+                        player.z
+                    );
+
+                    other.rotation.y =
+                        player.rotation;
+                }
+            }
+
+
+            gameReady = true;
+
+            document.getElementById(
+                "loading"
+            ).style.display =
+                "none";
+
+            break;
+
+
+        case "playerUpdate":
+
+            updateOtherPlayer(
+                data.player
+            );
+
+            break;
+
+
+        case "cardCollected":
+
+            collectLocalCard(
+                data.cardId
+            );
+
+            break;
+
+
+        case "allCardsCollected":
+
+            collectedCards = 3;
+
+            updateObjective();
+
+            showMessage(
+                "ALL CARDS FOUND — FIND THE EXIT"
+            );
+
+            break;
+
+
+        case "playerEscaped":
+
+            showMessage(
+                data.playerName +
+                " FOUND THE EXIT!"
+            );
+
+            break;
+
+
+        case "error":
+
+            document.getElementById(
+                "loadingText"
+            ).textContent =
+                data.message;
+
+            break;
+    }
+}
+
+
+function updateOtherPlayer(
+    player
+) {
+
+    if (
+        player.id === myId
+    ) return;
+
+
+    const other =
+        createOtherPlayer(
+            player
+        );
+
+
+    other.position.x +=
+        (player.x -
+        other.position.x) *
+        .25;
+
+    other.position.z +=
+        (player.z -
+        other.position.z) *
+        .25;
+
+    other.rotation.y =
+        player.rotation;
+}
+
+
+/*
+=========================================================
+COLLECT CARDS
+=========================================================
+*/
+
+function collectLocalCard(
+    id
+) {
+
+    const card =
+        cards.find(
+            c => c.id === id
+        );
+
+    if (!card) return;
+
+    if (card.collected) return;
+
+    card.collected =
+        true;
+
+    card.group.visible =
+        false;
+
+    collectedCards++;
+
+    document.getElementById(
+        "cardCount"
+    ).textContent =
+        `${collectedCards} / 3`;
+
+    updateObjective();
+}
+
+
+function updateObjective() {
+
+    if (
+        collectedCards >= 3
+    ) {
+
+        document.getElementById(
+            "objective"
+        ).textContent =
+            "ALL CARDS FOUND. FIND THE EXIT.";
+
+    } else {
+
+        document.getElementById(
+            "objective"
+        ).textContent =
+            "Find the three exit cards.";
+    }
+}
+
+
+/*
+=========================================================
+COLLISION
+=========================================================
+*/
+
+function collides(
+    x,
+    z
+) {
+
+    for (
+        const wall of walls
+    ) {
 
         if (
-            x + playerRadius > wall.minX &&
-            x - playerRadius < wall.maxX &&
-            z + playerRadius > wall.minZ &&
-            z - playerRadius < wall.maxZ
+            x + radius > wall.minX &&
+            x - radius < wall.maxX &&
+            z + radius > wall.minZ &&
+            z - radius < wall.maxZ
         ) {
 
             return true;
@@ -1094,56 +1896,40 @@ function collides(x, z) {
 }
 
 
-/* =========================================================
-   INPUT
-========================================================= */
+/*
+=========================================================
+INPUT
+=========================================================
+*/
 
-document.addEventListener("keydown", e => {
+document.addEventListener(
+    "keydown",
+    e => {
 
-    keys[e.code] = true;
+        keys[e.code] = true;
 
-    if (e.code === "KeyF") {
 
-        flashlightOn = !flashlightOn;
+        if (
+            e.code === "KeyF"
+        ) {
 
-        flashlight.visible = flashlightOn;
+            flashlightOn =
+                !flashlightOn;
 
-        document.getElementById(
-            "flashlightStatus"
-        ).textContent =
-            flashlightOn
-            ? "FLASHLIGHT: ON"
-            : "FLASHLIGHT: OFF";
+            flashlight.visible =
+                flashlightOn;
+        }
     }
-});
-
-document.addEventListener("keyup", e => {
-
-    keys[e.code] = false;
-});
+);
 
 
-document.addEventListener("mousemove", e => {
+document.addEventListener(
+    "keyup",
+    e => {
 
-    if (!gameStarted) return;
-
-    if (document.pointerLockElement !== renderer.domElement) {
-        return;
+        keys[e.code] = false;
     }
-
-    yaw -= e.movementX * .0022;
-
-    pitch -= e.movementY * .0022;
-
-    pitch = THREE.MathUtils.clamp(
-        pitch,
-        -Math.PI / 2.1,
-        Math.PI / 2.1
-    );
-
-    camera.rotation.y = yaw;
-    camera.rotation.x = pitch;
-});
+);
 
 
 renderer.domElement.addEventListener(
@@ -1151,334 +1937,116 @@ renderer.domElement.addEventListener(
     () => {
 
         if (
-            gameStarted &&
-            !gameEnded &&
-            document.pointerLockElement !== renderer.domElement
+            gameReady &&
+            !gameEnded
         ) {
-            renderer.domElement.requestPointerLock();
+
+            renderer.domElement
+                .requestPointerLock();
         }
     }
 );
 
 
-/* =========================================================
-   AUDIO
-========================================================= */
-
-let audioContext;
-let masterGain;
-let buzzOscillator;
-
-function startAudio() {
-
-    if (audioContext) return;
-
-    audioContext =
-        new (window.AudioContext ||
-        window.webkitAudioContext)();
-
-    masterGain =
-        audioContext.createGain();
-
-    masterGain.gain.value = .06;
-
-    masterGain.connect(
-        audioContext.destination
-    );
-
-    buzzOscillator =
-        audioContext.createOscillator();
-
-    buzzOscillator.type = "sawtooth";
-
-    buzzOscillator.frequency.value = 58;
-
-    buzzOscillator.connect(masterGain);
-
-    buzzOscillator.start();
-}
-
-
-function soundBeep(freq = 100, duration = .08) {
-
-    if (!audioContext) return;
-
-    const osc =
-        audioContext.createOscillator();
-
-    const gain =
-        audioContext.createGain();
-
-    osc.frequency.value = freq;
-
-    gain.gain.value = .1;
-
-    osc.connect(gain);
-    gain.connect(audioContext.destination);
-
-    osc.start();
-
-    gain.gain.exponentialRampToValueAtTime(
-        .001,
-        audioContext.currentTime + duration
-    );
-
-    osc.stop(
-        audioContext.currentTime + duration
-    );
-}
-
-
-/* =========================================================
-   START
-========================================================= */
-
-document.getElementById(
-    "startButton"
-).addEventListener(
-    "click",
-    () => {
-
-        gameStarted = true;
-
-        document.getElementById(
-            "startScreen"
-        ).style.display = "none";
-
-        startAudio();
-
-        renderer.domElement.requestPointerLock();
-    }
-);
-
-
-/* =========================================================
-   CARD COLLECTION
-========================================================= */
-
-function updateCards() {
-
-    for (const card of cards) {
-
-        if (card.collected) continue;
-
-        const distance =
-            camera.position.distanceTo(
-                card.group.position
-            );
-
-        card.group.rotation.y += .025;
-
-        card.group.position.y =
-            Math.sin(
-                performance.now() * .003 +
-                card.number
-            ) * .08;
-
-        if (distance < 1.5) {
-
-            card.collected = true;
-
-            scene.remove(card.group);
-
-            collectedCards++;
-
-            document.getElementById(
-                "cardCount"
-            ).textContent =
-                `${collectedCards} / 3`;
-
-            if (collectedCards === 3) {
-
-                document.getElementById(
-                    "objective"
-                ).textContent =
-                    "ALL CARDS FOUND. FIND THE EXIT.";
-
-                soundBeep(700, .2);
-
-            } else {
-
-                soundBeep(500, .12);
-            }
-        }
-    }
-}
-
-
-/* =========================================================
-   MONSTER AI
-========================================================= */
-
-let monsterSpeed = .8;
-
-function updateMonster(delta) {
-
-    if (collectedCards === 0) {
-
-        // Monster mostly stays hidden until
-        // the player finds the first card.
-
-        monster.rotation.y +=
-            Math.sin(performance.now() * .001) * .002;
-
-        return;
-    }
-
-    const monsterPos = monster.position;
-
-    const playerPos = camera.position;
-
-    const dx = playerPos.x - monsterPos.x;
-    const dz = playerPos.z - monsterPos.z;
-
-    const distance =
-        Math.sqrt(dx * dx + dz * dz);
-
-    /*
-        The closer you are,
-        the faster it gets.
-    */
-
-    let speed = monsterSpeed;
-
-    if (distance < 18) {
-        speed = 1.7;
-    }
-
-    if (distance < 9) {
-        speed = 2.3;
-    }
-
-    if (distance < 5) {
-        speed = 2.8;
-    }
-
-    if (distance > 55) {
-
-        // Slowly move toward player
-        speed = .4;
-    }
-
-    const angle =
-        Math.atan2(dx, dz);
-
-    monster.rotation.y = angle;
-
-    monsterPos.x +=
-        Math.sin(angle) * speed * delta;
-
-    monsterPos.z +=
-        Math.cos(angle) * speed * delta;
-
-    // Keep monster from going outside
-    monsterPos.x =
-        THREE.MathUtils.clamp(
-            monsterPos.x,
-            -47,
-            47
-        );
-
-    monsterPos.z =
-        THREE.MathUtils.clamp(
-            monsterPos.z,
-            -47,
-            47
-        );
-
-    /*
-        Danger effect
-    */
-
-    if (distance < 14) {
-
-        const danger =
-            THREE.MathUtils.clamp(
-                1 - distance / 14,
-                0,
-                1
-            );
-
-        document.getElementById(
-            "danger"
-        ).style.opacity =
-            danger * .85;
-
-        scareTimer += delta;
+document.addEventListener(
+    "mousemove",
+    e => {
 
         if (
-            scareTimer > .7 &&
-            distance < 8
+            document.pointerLockElement !==
+            renderer.domElement
         ) {
 
-            soundBeep(
-                70,
-                .15
+            return;
+        }
+
+        yaw -=
+            e.movementX *
+            .0022;
+
+        pitch -=
+            e.movementY *
+            .0022;
+
+        pitch =
+            THREE.MathUtils.clamp(
+                pitch,
+                -Math.PI / 2.1,
+                Math.PI / 2.1
             );
 
-            scareTimer = 0;
-        }
+        camera.rotation.y =
+            yaw;
 
-    } else {
-
-        document.getElementById(
-            "danger"
-        ).style.opacity = 0;
+        camera.rotation.x =
+            pitch;
     }
-
-    /*
-        Monster catches player
-    */
-
-    if (distance < 1.15) {
-
-        health -= 45 * delta;
-
-        if (health <= 0) {
-
-            loseGame();
-        }
-    }
-}
+);
 
 
-/* =========================================================
-   PLAYER MOVEMENT
-========================================================= */
+/*
+=========================================================
+PLAYER MOVEMENT
+=========================================================
+*/
 
-function updatePlayer(delta) {
+function updatePlayer(
+    delta
+) {
 
     let forward = 0;
+
     let strafe = 0;
 
-    if (keys["KeyW"]) forward += 1;
-    if (keys["KeyS"]) forward -= 1;
-    if (keys["KeyD"]) strafe += 1;
-    if (keys["KeyA"]) strafe -= 1;
+
+    if (keys["KeyW"])
+        forward++;
+
+    if (keys["KeyS"])
+        forward--;
+
+    if (keys["KeyD"])
+        strafe++;
+
+    if (keys["KeyA"])
+        strafe--;
+
 
     const moving =
         forward !== 0 ||
         strafe !== 0;
 
+
     let running =
         keys["ShiftLeft"] ||
         keys["ShiftRight"];
+
 
     if (stamina <= 0) {
         running = false;
     }
 
+
     const speed =
-        running ? 7 : 3.5;
+        running
+        ? 7
+        : 3.5;
 
-    if (running && moving) {
 
-        stamina -= 30 * delta;
+    if (
+        running &&
+        moving
+    ) {
+
+        stamina -=
+            30 * delta;
 
     } else {
 
-        stamina += 20 * delta;
+        stamina +=
+            20 * delta;
     }
+
 
     stamina =
         THREE.MathUtils.clamp(
@@ -1487,60 +2055,83 @@ function updatePlayer(delta) {
             100
         );
 
-    const direction =
-        new THREE.Vector3();
 
-    direction.set(
-        Math.sin(yaw),
-        0,
-        -Math.cos(yaw)
-    );
+    const forwardDir =
+        new THREE.Vector3(
+            Math.sin(yaw),
+            0,
+            -Math.cos(yaw)
+        );
 
-    const right =
+
+    const rightDir =
         new THREE.Vector3(
             Math.cos(yaw),
             0,
             Math.sin(yaw)
         );
 
+
     const move =
         new THREE.Vector3();
 
+
     move.addScaledVector(
-        direction,
+        forwardDir,
         forward
     );
 
     move.addScaledVector(
-        right,
+        rightDir,
         strafe
     );
 
-    if (move.lengthSq() > 0) {
+
+    if (
+        move.lengthSq() > 0
+    ) {
 
         move.normalize();
+
 
         const distance =
             speed * delta;
 
+
         const nextX =
             camera.position.x +
-            move.x * distance;
+            move.x *
+            distance;
 
         const nextZ =
             camera.position.z +
-            move.z * distance;
+            move.z *
+            distance;
 
-        // Separate axis collision
-        if (!collides(nextX, camera.position.z)) {
 
-            camera.position.x = nextX;
+        if (
+            !collides(
+                nextX,
+                camera.position.z
+            )
+        ) {
+
+            camera.position.x =
+                nextX;
         }
 
-        if (!collides(camera.position.x, nextZ)) {
 
-            camera.position.z = nextZ;
+        if (
+            !collides(
+                camera.position.x,
+                nextZ
+            )
+        ) {
+
+            camera.position.z =
+                nextZ;
         }
+
 
         /*
             Head bob
@@ -1550,181 +2141,447 @@ function updatePlayer(delta) {
             delta *
             (running ? 14 : 9);
 
-        const bob =
+        camera.position.y =
+            playerHeight +
             Math.sin(bobTime) *
             (running ? .055 : .025);
 
-        camera.position.y =
-            playerHeight + bob;
 
         /*
             Footsteps
         */
 
-        footstepsTimer -= delta;
+        footsteps -= delta;
 
         if (
-            footstepsTimer <= 0 &&
-            audioContext
+            footsteps <= 0
         ) {
 
-            soundBeep(
-                running ? 75 : 55,
-                .035
-            );
-
-            footstepsTimer =
-                running ? .28 : .48;
+            footsteps =
+                running
+                ? .28
+                : .48;
         }
 
     } else {
 
         camera.position.y +=
-            (playerHeight -
-            camera.position.y) *
-            delta * 8;
+            (
+                playerHeight -
+                camera.position.y
+            ) *
+            delta *
+            8;
+    }
+
+
+    /*
+        Send position to server
+    */
+
+    send({
+        type: "playerUpdate",
+
+        x: camera.position.x,
+
+        y: camera.position.y,
+
+        z: camera.position.z,
+
+        rotation: yaw
+    });
+}
+
+
+/*
+=========================================================
+CARD CHECK
+=========================================================
+*/
+
+function checkCards() {
+
+    for (
+        const card of cards
+    ) {
+
+        if (
+            card.collected
+        ) continue;
+
+
+        card.group.rotation.y +=
+            .02;
+
+
+        card.group.position.y =
+            Math.sin(
+                performance.now() *
+                .003
+            ) * .08;
+
+
+        const distance =
+            camera.position.distanceTo(
+                card.group.position
+            );
+
+
+        if (
+            distance < 1.4
+        ) {
+
+            send({
+                type: "collectCard",
+                cardId: card.id
+            });
+        }
     }
 }
 
 
-/* =========================================================
-   EXIT
-========================================================= */
+/*
+=========================================================
+MONSTER
+=========================================================
+*/
+
+function updateMonster(
+    delta
+) {
+
+    const dx =
+        camera.position.x -
+        monster.position.x;
+
+    const dz =
+        camera.position.z -
+        monster.position.z;
+
+
+    const distance =
+        Math.sqrt(
+            dx * dx +
+            dz * dz
+        );
+
+
+    /*
+        The monster is
+        synchronized by using
+        a shared approximate
+        target.
+    */
+
+    if (
+        collectedCards > 0
+    ) {
+
+        const angle =
+            Math.atan2(
+                dx,
+                dz
+            );
+
+
+        let speed =
+            .55;
+
+        if (
+            distance < 25
+        ) {
+
+            speed =
+                1.5;
+        }
+
+        if (
+            distance < 12
+        ) {
+
+            speed =
+                2.1;
+        }
+
+
+        monster.position.x +=
+            Math.sin(angle) *
+            speed *
+            delta;
+
+        monster.position.z +=
+            Math.cos(angle) *
+            speed *
+            delta;
+
+
+        monster.rotation.y =
+            angle;
+    }
+
+
+    /*
+        Danger
+    */
+
+    if (
+        distance < 14
+    ) {
+
+        const danger =
+            THREE.MathUtils.clamp(
+                1 -
+                distance / 14,
+                0,
+                1
+            );
+
+        document.getElementById(
+            "danger"
+        ).style.opacity =
+            danger * .9;
+
+    } else {
+
+        document.getElementById(
+            "danger"
+        ).style.opacity =
+            0;
+    }
+
+
+    if (
+        distance < 1.1
+    ) {
+
+        health -=
+            40 * delta;
+
+        if (
+            health <= 0
+        ) {
+
+            lose();
+        }
+    }
+}
+
+
+/*
+=========================================================
+EXIT
+=========================================================
+*/
 
 function checkExit() {
 
+    if (
+        collectedCards < 3
+    ) return;
+
+
     const distance =
         camera.position.distanceTo(
-            exitDoor.position
+            exit.position
         );
 
+
     if (
-        distance < 2.5 &&
-        collectedCards === 3
+        distance < 3
     ) {
 
-        winGame();
+        send({
+            type: "playerEscaped"
+        });
+
+        win();
     }
 }
 
 
-/* =========================================================
-   WIN / LOSE
-========================================================= */
-
-function winGame() {
-
-    if (gameEnded) return;
-
-    gameEnded = true;
-
-    if (document.pointerLockElement) {
-
-        document.exitPointerLock();
-    }
-
-    document.getElementById(
-        "winScreen"
-    ).style.display = "flex";
-}
-
-
-function loseGame() {
-
-    if (gameEnded) return;
-
-    gameEnded = true;
-
-    if (document.pointerLockElement) {
-
-        document.exitPointerLock();
-    }
-
-    document.getElementById(
-        "gameOver"
-    ).style.display = "flex";
-}
-
-
-/* =========================================================
-   FLICKERING LIGHTS
-========================================================= */
+/*
+=========================================================
+LIGHT FLICKER
+=========================================================
+*/
 
 function updateLights() {
 
-    for (const item of lights) {
+    for (
+        const item of lights
+    ) {
 
-        if (Math.random() < .006) {
+        if (
+            Math.random() < .006
+        ) {
 
             item.flicker =
-                Math.random() * .5 + .05;
+                .15 +
+                Math.random() *
+                .5;
         }
 
-        if (item.flicker > 0) {
 
-            item.flicker -= .04;
+        if (
+            item.flicker > 0
+        ) {
+
+            item.flicker -=
+                .04;
 
             item.light.intensity =
                 Math.random() < .5
                 ? 0
                 : item.base;
 
-            item.fixture.material.emissiveIntensity =
-                item.light.intensity > 0
-                ? 2
-                : .1;
-
         } else {
 
             item.light.intensity =
                 item.base;
-
-            item.fixture.material.emissiveIntensity =
-                2;
         }
     }
 }
 
 
-/* =========================================================
-   RANDOM CAMERA SHAKE
-========================================================= */
+/*
+=========================================================
+MESSAGE
+=========================================================
+*/
 
-function cameraShake(delta) {
+let messageTimer = 0;
 
-    if (!monster) return;
+function showMessage(
+    text
+) {
 
-    const distance =
-        camera.position.distanceTo(
-            monster.position
+    const el =
+        document.getElementById(
+            "message"
         );
 
-    if (distance < 7) {
+    el.textContent =
+        text;
 
-        const intensity =
-            (7 - distance) / 7;
+    el.style.opacity =
+        1;
 
-        camera.rotation.z =
-            Math.sin(
-                performance.now() * .04
-            ) * intensity * .012;
-    } else {
+    messageTimer = 3;
+}
 
-        camera.rotation.z *= .9;
+
+function updateMessage(
+    delta
+) {
+
+    if (
+        messageTimer > 0
+    ) {
+
+        messageTimer -=
+            delta;
+
+        if (
+            messageTimer <= 0
+        ) {
+
+            document.getElementById(
+                "message"
+            ).style.opacity =
+                0;
+        }
     }
 }
 
 
-/* =========================================================
-   RESIZE
-========================================================= */
+/*
+=========================================================
+WIN / LOSE
+=========================================================
+*/
+
+function win() {
+
+    if (gameEnded)
+        return;
+
+    gameEnded = true;
+
+    if (
+        document.pointerLockElement
+    ) {
+
+        document.exitPointerLock();
+    }
+
+    document.getElementById(
+        "win"
+    ).style.display =
+        "flex";
+}
+
+
+function lose() {
+
+    if (gameEnded)
+        return;
+
+    gameEnded = true;
+
+    if (
+        document.pointerLockElement
+    ) {
+
+        document.exitPointerLock();
+    }
+
+    document.getElementById(
+        "lose"
+    ).style.display =
+        "flex";
+}
+
+
+/*
+=========================================================
+HUD
+=========================================================
+*/
+
+function updateHUD() {
+
+    document.getElementById(
+        "health"
+    ).style.width =
+        `${Math.max(0, health)}%`;
+
+
+    document.getElementById(
+        "stamina"
+    ).style.width =
+        `${stamina}%`;
+
+
+    document.getElementById(
+        "cardCount"
+    ).textContent =
+        `${collectedCards} / 3`;
+}
+
+
+/*
+=========================================================
+RESIZE
+=========================================================
+*/
 
 window.addEventListener(
     "resize",
     () => {
 
         camera.aspect =
-            innerWidth / innerHeight;
+            innerWidth /
+            innerHeight;
 
         camera.updateProjectionMatrix();
 
@@ -1736,31 +2593,18 @@ window.addEventListener(
 );
 
 
-/* =========================================================
-   HUD
-========================================================= */
-
-function updateHUD() {
-
-    document.getElementById(
-        "healthFill"
-    ).style.width =
-        `${Math.max(0, health)}%`;
-
-    document.getElementById(
-        "staminaFill"
-    ).style.width =
-        `${stamina}%`;
-}
-
-
-/* =========================================================
-   MAIN LOOP
-========================================================= */
+/*
+=========================================================
+MAIN LOOP
+=========================================================
+*/
 
 function animate() {
 
-    requestAnimationFrame(animate);
+    requestAnimationFrame(
+        animate
+    );
+
 
     const delta =
         Math.min(
@@ -1768,28 +2612,42 @@ function animate() {
             .05
         );
 
-    if (gameStarted && !gameEnded) {
 
-        updatePlayer(delta);
+    if (
+        gameReady &&
+        !gameEnded
+    ) {
 
-        updateCards();
+        updatePlayer(
+            delta
+        );
 
-        updateMonster(delta);
+        checkCards();
+
+        updateMonster(
+            delta
+        );
 
         updateLights();
 
-        cameraShake(delta);
-
         checkExit();
+
+        updateMessage(
+            delta
+        );
 
         updateHUD();
     }
+
 
     renderer.render(
         scene,
         camera
     );
 }
+
+
+connect();
 
 animate();
 
