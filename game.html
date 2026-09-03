@@ -1,0 +1,1350 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Basement - Horror Game</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+    background: #000;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    user-select: none;
+}
+
+canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    background: #050505;
+}
+
+/* MENU */
+
+#menu {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background:
+        radial-gradient(circle at center, rgba(40,40,40,.2), #000 65%);
+}
+
+.menuBox {
+    width: min(650px, 90%);
+    padding: 50px 35px;
+    background: rgba(0,0,0,.82);
+    border: 1px solid #333;
+    box-shadow: 0 0 60px #000;
+}
+
+h1 {
+    font-size: clamp(50px, 9vw, 100px);
+    letter-spacing: 12px;
+    color: #ddd;
+    text-shadow:
+        0 0 10px #fff,
+        0 0 30px #555;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    color: #777;
+    letter-spacing: 5px;
+    margin-bottom: 40px;
+}
+
+button {
+    border: 1px solid #777;
+    background: #111;
+    color: white;
+    padding: 16px 45px;
+    font-size: 18px;
+    cursor: pointer;
+    letter-spacing: 3px;
+    transition: .2s;
+}
+
+button:hover {
+    background: #eee;
+    color: #000;
+    box-shadow: 0 0 25px white;
+}
+
+.controls {
+    margin-top: 35px;
+    color: #777;
+    line-height: 2;
+    font-size: 14px;
+}
+
+/* HUD */
+
+#hud {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+}
+
+#health {
+    position: absolute;
+    top: 25px;
+    left: 25px;
+    width: 220px;
+}
+
+.hudLabel {
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: #aaa;
+    margin-bottom: 7px;
+}
+
+.bar {
+    width: 100%;
+    height: 12px;
+    background: #222;
+    border: 1px solid #555;
+}
+
+#healthBar {
+    height: 100%;
+    width: 100%;
+    background: #ddd;
+    transition: width .2s;
+}
+
+#stamina {
+    position: absolute;
+    top: 75px;
+    left: 25px;
+    width: 220px;
+}
+
+#staminaBar {
+    height: 100%;
+    width: 100%;
+    background: #aaa;
+}
+
+#objective {
+    position: absolute;
+    top: 25px;
+    right: 25px;
+    text-align: right;
+    color: #bbb;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+#message {
+    position: absolute;
+    bottom: 75px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 18px;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px black;
+    opacity: 0;
+    transition: opacity .3s;
+    text-align: center;
+}
+
+#crosshair {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 0 8px white;
+}
+
+#danger {
+    position: fixed;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+    background: radial-gradient(circle, transparent 35%, rgba(100,0,0,.7));
+    opacity: 0;
+}
+
+/* END SCREEN */
+
+#endScreen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(0,0,0,.93);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+#endTitle {
+    font-size: 65px;
+    letter-spacing: 8px;
+    margin-bottom: 20px;
+}
+
+#endText {
+    color: #888;
+    margin-bottom: 30px;
+    font-size: 18px;
+}
+
+/* VIGNETTE */
+
+#vignette {
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background:
+        radial-gradient(
+            circle,
+            transparent 20%,
+            rgba(0,0,0,.2) 55%,
+            rgba(0,0,0,.9) 100%
+        );
+}
+
+/* STATIC */
+
+#static {
+    position: fixed;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    opacity: .04;
+    background-image:
+        repeating-linear-gradient(
+            0deg,
+            rgba(255,255,255,.08) 0px,
+            rgba(255,255,255,.08) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+    animation: staticMove .12s infinite;
+}
+
+@keyframes staticMove {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(2px); }
+    100% { transform: translateY(0); }
+}
+
+.hidden {
+    display: none !important;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="menu">
+    <div class="menuBox">
+        <h1>THE BASEMENT</h1>
+
+        <div class="subtitle">
+            SOMETHING IS DOWN HERE
+        </div>
+
+        <button id="playButton">ENTER</button>
+
+        <div class="controls">
+            WASD — MOVE<br>
+            MOUSE — LOOK<br>
+            SHIFT — SPRINT<br>
+            F — FLASHLIGHT<br>
+            FIND 3 KEYS<br>
+            ESCAPE THROUGH THE EXIT
+        </div>
+    </div>
+</div>
+
+<div id="hud">
+
+    <div id="health">
+        <div class="hudLabel">HEALTH</div>
+        <div class="bar">
+            <div id="healthBar"></div>
+        </div>
+    </div>
+
+    <div id="stamina">
+        <div class="hudLabel">STAMINA</div>
+        <div class="bar">
+            <div id="staminaBar"></div>
+        </div>
+    </div>
+
+    <div id="objective">
+        KEYS: <span id="keys">0</span> / 3<br>
+        <span id="objectiveText">Find the keys.</span>
+    </div>
+
+    <div id="crosshair"></div>
+
+    <div id="message"></div>
+</div>
+
+<div id="danger"></div>
+<div id="vignette"></div>
+<div id="static"></div>
+
+<div id="endScreen">
+    <div>
+        <div id="endTitle">YOU DIED</div>
+        <div id="endText">The basement kept you.</div>
+        <button id="restartButton">TRY AGAIN</button>
+    </div>
+</div>
+
+<script>
+
+/* =========================================================
+   THE BASEMENT
+   Horror game — zero external libraries
+========================================================= */
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let W = window.innerWidth;
+let H = window.innerHeight;
+
+function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+}
+
+window.addEventListener("resize", resize);
+resize();
+
+/* =========================
+   GAME STATE
+========================= */
+
+let gameRunning = false;
+let gameOver = false;
+
+let health = 100;
+let stamina = 100;
+let keyCount = 0;
+
+let flashlight = true;
+
+let mouseX = 0;
+let mouseY = 0;
+
+const keysDown = {};
+
+document.addEventListener("keydown", e => {
+    keysDown[e.key.toLowerCase()] = true;
+
+    if (e.key.toLowerCase() === "f" && gameRunning) {
+        flashlight = !flashlight;
+        message(flashlight ? "FLASHLIGHT ON" : "FLASHLIGHT OFF");
+    }
+
+    if (e.key === "Escape" && gameRunning) {
+        gameRunning = false;
+        document.exitPointerLock?.();
+        document.getElementById("menu").style.display = "flex";
+    }
+});
+
+document.addEventListener("keyup", e => {
+    keysDown[e.key.toLowerCase()] = false;
+});
+
+/* =========================
+   AUDIO
+========================= */
+
+let audioCtx;
+
+function startAudio() {
+    if (!audioCtx) {
+        audioCtx = new (
+            window.AudioContext ||
+            window.webkitAudioContext
+        )();
+    }
+
+    if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+    }
+}
+
+function sound(type) {
+
+    if (!audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === "heartbeat") {
+        osc.frequency.value = 55;
+        gain.gain.value = .18;
+        osc.type = "sine";
+
+        osc.start();
+
+        gain.gain.exponentialRampToValueAtTime(
+            .001,
+            audioCtx.currentTime + .3
+        );
+
+        osc.stop(audioCtx.currentTime + .3);
+    }
+
+    if (type === "scare") {
+        osc.frequency.value = 90;
+        osc.type = "sawtooth";
+        gain.gain.value = .35;
+
+        osc.start();
+
+        osc.frequency.exponentialRampToValueAtTime(
+            20,
+            audioCtx.currentTime + 1
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .001,
+            audioCtx.currentTime + 1
+        );
+
+        osc.stop(audioCtx.currentTime + 1);
+    }
+
+    if (type === "key") {
+        osc.frequency.value = 500;
+        osc.type = "triangle";
+        gain.gain.value = .2;
+
+        osc.start();
+
+        osc.frequency.exponentialRampToValueAtTime(
+            1000,
+            audioCtx.currentTime + .25
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .001,
+            audioCtx.currentTime + .25
+        );
+
+        osc.stop(audioCtx.currentTime + .25);
+    }
+}
+
+/* =========================
+   PLAYER
+========================= */
+
+const player = {
+    x: 0,
+    y: 0,
+    angle: 0,
+    speed: 2.2,
+    radius: 12
+};
+
+/* =========================
+   WORLD
+========================= */
+
+const world = {
+    width: 3200,
+    height: 2400
+};
+
+let walls = [];
+let items = [];
+let monster = null;
+
+/* =========================
+   CREATE MAP
+========================= */
+
+function createMap() {
+
+    walls = [];
+
+    // Outer walls
+    walls.push(
+        {x:0,y:0,w:world.width,h:40},
+        {x:0,y:world.height-40,w:world.width,h:40},
+        {x:0,y:0,w:40,h:world.height},
+        {x:world.width-40,y:0,w:40,h:world.height}
+    );
+
+    // Rooms / corridors
+    walls.push(
+        {x:600,y:0,w:50,h:650},
+        {x:600,y:850,w:50,h:800},
+
+        {x:1200,y:500,w:50,h:1400},
+
+        {x:1800,y:0,w:50,h:700},
+        {x:1800,y:900,w:50,h:900},
+
+        {x:2400,y:500,w:50,h:1400},
+
+        {x:650,y:600,w:550,h:50},
+        {x:1250,y:1800,w:550,h:50},
+        {x:1850,y:700,w:550,h:50},
+
+        {x:400,y:1200,w:300,h:50},
+        {x:700,y:1200,w:50,h:500},
+
+        {x:2450,y:1200,w:500,h:50},
+        {x:2600,y:1200,w:50,h:500}
+    );
+
+    // Random debris
+    for (let i=0; i<35; i++) {
+
+        let x = 100 + Math.random() * (world.width - 200);
+        let y = 100 + Math.random() * (world.height - 200);
+
+        walls.push({
+            x,
+            y,
+            w: 25 + Math.random() * 50,
+            h: 25 + Math.random() * 50
+        });
+    }
+}
+
+/* =========================
+   ITEMS
+========================= */
+
+function createItems() {
+
+    items = [];
+
+    const positions = [
+        {x:320,y:300},
+        {x:900,y:1000},
+        {x:2200,y:1500}
+    ];
+
+    positions.forEach((p,i) => {
+        items.push({
+            x:p.x,
+            y:p.y,
+            type:"key",
+            collected:false,
+            glow:0
+        });
+    });
+
+    // Exit
+    items.push({
+        x:2950,
+        y:2150,
+        type:"exit",
+        collected:false
+    });
+}
+
+/* =========================
+   MONSTER
+========================= */
+
+function createMonster() {
+
+    monster = {
+        x:2700,
+        y:300,
+        speed:0.65,
+        active:false,
+        visible:false,
+        attackCooldown:0
+    };
+}
+
+/* =========================
+   COLLISION
+========================= */
+
+function collides(x,y,r) {
+
+    for (const wall of walls) {
+
+        const closestX = Math.max(
+            wall.x,
+            Math.min(x, wall.x + wall.w)
+        );
+
+        const closestY = Math.max(
+            wall.y,
+            Math.min(y, wall.y + wall.h)
+        );
+
+        const dx = x - closestX;
+        const dy = y - closestY;
+
+        if (dx*dx + dy*dy < r*r) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/* =========================
+   MESSAGE
+========================= */
+
+let messageTimer = null;
+
+function message(text) {
+
+    const el = document.getElementById("message");
+
+    el.textContent = text;
+    el.style.opacity = 1;
+
+    clearTimeout(messageTimer);
+
+    messageTimer = setTimeout(() => {
+        el.style.opacity = 0;
+    }, 2500);
+}
+
+/* =========================
+   START
+========================= */
+
+document.getElementById("playButton").onclick = () => {
+
+    startAudio();
+
+    document.getElementById("menu").style.display = "none";
+    document.getElementById("hud").style.display = "block";
+
+    resetGame();
+
+    canvas.requestPointerLock?.();
+
+    gameRunning = true;
+    gameOver = false;
+
+    message("Find the 3 keys. Then escape.");
+
+    lastTime = performance.now();
+};
+
+document.getElementById("restartButton").onclick = () => {
+
+    document.getElementById("endScreen").style.display = "none";
+    document.getElementById("hud").style.display = "block";
+
+    resetGame();
+
+    canvas.requestPointerLock?.();
+
+    gameRunning = true;
+    gameOver = false;
+
+    message("You're back in the basement.");
+};
+
+/* =========================
+   RESET
+========================= */
+
+function resetGame() {
+
+    health = 100;
+    stamina = 100;
+    keyCount = 0;
+    flashlight = true;
+
+    player.x = 250;
+    player.y = 220;
+    player.angle = 0;
+
+    createMap();
+    createItems();
+    createMonster();
+
+    document.getElementById("keys").textContent = keyCount;
+    document.getElementById("objectiveText").textContent =
+        "Find the keys.";
+}
+
+/* =========================
+   MOUSE
+========================= */
+
+document.addEventListener("mousemove", e => {
+
+    if (!gameRunning) return;
+
+    if (document.pointerLockElement === canvas) {
+        player.angle += e.movementX * 0.003;
+    }
+});
+
+/* =========================
+   UPDATE
+========================= */
+
+function update(dt) {
+
+    if (!gameRunning || gameOver) return;
+
+    let dx = 0;
+    let dy = 0;
+
+    if (keysDown["w"]) {
+        dx += Math.cos(player.angle);
+        dy += Math.sin(player.angle);
+    }
+
+    if (keysDown["s"]) {
+        dx -= Math.cos(player.angle);
+        dy -= Math.sin(player.angle);
+    }
+
+    if (keysDown["a"]) {
+        dx += Math.cos(player.angle - Math.PI/2);
+        dy += Math.sin(player.angle - Math.PI/2);
+    }
+
+    if (keysDown["d"]) {
+        dx += Math.cos(player.angle + Math.PI/2);
+        dy += Math.sin(player.angle + Math.PI/2);
+    }
+
+    const moving = dx !== 0 || dy !== 0;
+
+    if (moving) {
+
+        const len = Math.sqrt(dx*dx + dy*dy);
+
+        dx /= len;
+        dy /= len;
+
+        let currentSpeed = player.speed;
+
+        if (keysDown["shift"] && stamina > 0) {
+
+            currentSpeed = 4;
+
+            stamina -= 35 * dt;
+
+            if (stamina < 0) stamina = 0;
+
+        } else {
+
+            stamina += 20 * dt;
+
+            if (stamina > 100) stamina = 100;
+        }
+
+        const nx = player.x + dx * currentSpeed * dt * 60;
+        const ny = player.y + dy * currentSpeed * dt * 60;
+
+        if (!collides(nx, player.y, player.radius)) {
+            player.x = nx;
+        }
+
+        if (!collides(player.x, ny, player.radius)) {
+            player.y = ny;
+        }
+
+    } else {
+
+        stamina += 25 * dt;
+
+        if (stamina > 100) stamina = 100;
+    }
+
+    updateItems();
+    updateMonster(dt);
+    updateHUD();
+}
+
+/* =========================
+   ITEMS
+========================= */
+
+function updateItems() {
+
+    for (const item of items) {
+
+        if (item.collected) continue;
+
+        const dx = player.x - item.x;
+        const dy = player.y - item.y;
+
+        const dist = Math.sqrt(dx*dx + dy*dy);
+
+        if (item.type === "key" && dist < 45) {
+
+            item.collected = true;
+
+            keyCount++;
+
+            sound("key");
+
+            message("YOU FOUND A KEY");
+
+            document.getElementById("keys").textContent =
+                keyCount;
+
+            if (keyCount === 3) {
+
+                message("THE EXIT IS OPEN... RUN.");
+
+                document.getElementById(
+                    "objectiveText"
+                ).textContent = "Reach the exit!";
+            }
+        }
+
+        if (item.type === "exit" && dist < 60) {
+
+            if (keyCount >= 3) {
+
+                winGame();
+
+            } else {
+
+                message(
+                    "The door is locked. You need all 3 keys."
+                );
+            }
+        }
+    }
+}
+
+/* =========================
+   MONSTER AI
+========================= */
+
+let heartbeatTimer = 0;
+
+function updateMonster(dt) {
+
+    if (!monster) return;
+
+    const dx = player.x - monster.x;
+    const dy = player.y - monster.y;
+
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    // Monster activates after collecting first key
+    if (keyCount >= 1) {
+        monster.active = true;
+    }
+
+    if (!monster.active) return;
+
+    let speed = monster.speed;
+
+    if (dist < 700) {
+
+        speed = 1.1;
+
+        monster.x += dx / dist * speed * dt * 60;
+        monster.y += dy / dist * speed * dt * 60;
+
+        if (dist < 450) {
+
+            monster.visible = true;
+
+            heartbeatTimer -= dt;
+
+            if (heartbeatTimer <= 0) {
+
+                sound("heartbeat");
+                heartbeatTimer = .8;
+            }
+
+            document.getElementById("danger").style.opacity =
+                Math.max(0, 1 - dist / 450) * .5;
+
+        } else {
+
+            monster.visible = false;
+        }
+
+    } else {
+
+        monster.visible = false;
+    }
+
+    if (dist < 55) {
+
+        if (monster.attackCooldown <= 0) {
+
+            health -= 20;
+
+            monster.attackCooldown = 1.2;
+
+            sound("scare");
+
+            message("IT FOUND YOU.");
+
+            if (health <= 0) {
+
+                loseGame();
+            }
+        }
+    }
+
+    if (monster.attackCooldown > 0) {
+        monster.attackCooldown -= dt;
+    }
+}
+
+/* =========================
+   HUD
+========================= */
+
+function updateHUD() {
+
+    document.getElementById("healthBar").style.width =
+        health + "%";
+
+    document.getElementById("staminaBar").style.width =
+        stamina + "%";
+
+    document.getElementById("keys").textContent =
+        keyCount;
+}
+
+/* =========================
+   WIN / LOSE
+========================= */
+
+function winGame() {
+
+    gameRunning = false;
+
+    document.exitPointerLock?.();
+
+    document.getElementById("hud").style.display = "none";
+    document.getElementById("endScreen").style.display = "flex";
+
+    document.getElementById("endTitle").textContent =
+        "YOU ESCAPED";
+
+    document.getElementById("endText").textContent =
+        "You made it out of the basement...";
+
+    sound("key");
+}
+
+function loseGame() {
+
+    gameRunning = false;
+    gameOver = true;
+
+    document.exitPointerLock?.();
+
+    document.getElementById("hud").style.display = "none";
+    document.getElementById("endScreen").style.display = "flex";
+
+    document.getElementById("endTitle").textContent =
+        "YOU DIED";
+
+    document.getElementById("endText").textContent =
+        "Something was waiting for you.";
+
+    sound("scare");
+}
+
+/* =========================
+   DRAW
+========================= */
+
+function draw() {
+
+    ctx.clearRect(0,0,W,H);
+
+    // Camera
+    const camX = player.x - W/2;
+    const camY = player.y - H/2;
+
+    ctx.save();
+
+    ctx.translate(-camX, -camY);
+
+    drawFloor();
+    drawWalls();
+    drawItems();
+    drawMonster();
+
+    ctx.restore();
+
+    drawDarkness();
+}
+
+/* =========================
+   FLOOR
+========================= */
+
+function drawFloor() {
+
+    ctx.fillStyle = "#101010";
+
+    ctx.fillRect(
+        0,
+        0,
+        world.width,
+        world.height
+    );
+
+    // Floor tiles
+    ctx.strokeStyle = "#181818";
+    ctx.lineWidth = 1;
+
+    const tile = 80;
+
+    for (let x=0; x<world.width; x+=tile) {
+
+        ctx.beginPath();
+        ctx.moveTo(x,0);
+        ctx.lineTo(x,world.height);
+        ctx.stroke();
+    }
+
+    for (let y=0; y<world.height; y+=tile) {
+
+        ctx.beginPath();
+        ctx.moveTo(0,y);
+        ctx.lineTo(world.width,y);
+        ctx.stroke();
+    }
+}
+
+/* =========================
+   WALLS
+========================= */
+
+function drawWalls() {
+
+    for (const wall of walls) {
+
+        ctx.fillStyle = "#292929";
+
+        ctx.fillRect(
+            wall.x,
+            wall.y,
+            wall.w,
+            wall.h
+        );
+
+        ctx.strokeStyle = "#444";
+
+        ctx.strokeRect(
+            wall.x,
+            wall.y,
+            wall.w,
+            wall.h
+        );
+    }
+}
+
+/* =========================
+   ITEMS
+========================= */
+
+function drawItems() {
+
+    for (const item of items) {
+
+        if (item.collected) continue;
+
+        if (item.type === "key") {
+
+            const pulse =
+                Math.sin(performance.now()/200) * 4;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                item.x,
+                item.y,
+                10 + pulse/3,
+                0,
+                Math.PI*2
+            );
+
+            ctx.fillStyle = "#ddd";
+            ctx.shadowBlur = 25;
+            ctx.shadowColor = "white";
+
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Key shape
+            ctx.strokeStyle = "#fff";
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(item.x+5,item.y);
+            ctx.lineTo(item.x+25,item.y);
+            ctx.lineTo(item.x+25,item.y+6);
+            ctx.moveTo(item.x+18,item.y);
+            ctx.lineTo(item.x+18,item.y+6);
+            ctx.stroke();
+        }
+
+        if (item.type === "exit") {
+
+            ctx.fillStyle =
+                keyCount >= 3 ? "#555" : "#171717";
+
+            ctx.fillRect(
+                item.x-35,
+                item.y-55,
+                70,
+                110
+            );
+
+            ctx.strokeStyle = "#888";
+
+            ctx.strokeRect(
+                item.x-35,
+                item.y-55,
+                70,
+                110
+            );
+
+            ctx.fillStyle = "#aaa";
+
+            ctx.fillRect(
+                item.x+15,
+                item.y,
+                8,
+                8
+            );
+        }
+    }
+}
+
+/* =========================
+   MONSTER DRAW
+========================= */
+
+function drawMonster() {
+
+    if (!monster || !monster.visible) return;
+
+    const x = monster.x;
+    const y = monster.y;
+
+    // shadow
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x,
+        y+35,
+        35,
+        12,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fillStyle = "rgba(0,0,0,.7)";
+    ctx.fill();
+
+    // body
+    ctx.fillStyle = "#050505";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        x,
+        y+10,
+        32,
+        55,
+        0,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    // head
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y-35,
+        30,
+        0,
+        Math.PI*2
+    );
+
+    ctx.fill();
+
+    // eyes
+    ctx.fillStyle = "#fff";
+
+    ctx.beginPath();
+    ctx.arc(x-10,y-40,4,0,Math.PI*2);
+    ctx.arc(x+10,y-40,4,0,Math.PI*2);
+    ctx.fill();
+
+    // mouth
+    ctx.fillStyle = "#111";
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y-25,
+        15,
+        0,
+        Math.PI
+    );
+
+    ctx.fill();
+}
+
+/* =========================
+   DARKNESS / FLASHLIGHT
+========================= */
+
+function drawDarkness() {
+
+    const gradient = ctx.createRadialGradient(
+        W/2,
+        H/2,
+        20,
+        W/2,
+        H/2,
+        flashlight ? 320 : 110
+    );
+
+    if (flashlight) {
+
+        gradient.addColorStop(0, "rgba(0,0,0,0)");
+        gradient.addColorStop(.45, "rgba(0,0,0,.15)");
+        gradient.addColorStop(.75, "rgba(0,0,0,.75)");
+        gradient.addColorStop(1, "rgba(0,0,0,.98)");
+
+    } else {
+
+        gradient.addColorStop(0, "rgba(0,0,0,.5)");
+        gradient.addColorStop(.5, "rgba(0,0,0,.95)");
+        gradient.addColorStop(1, "rgba(0,0,0,1)");
+    }
+
+    ctx.fillStyle = gradient;
+
+    ctx.fillRect(
+        0,
+        0,
+        W,
+        H
+    );
+
+    // flashlight cone
+    if (flashlight) {
+
+        ctx.save();
+
+        ctx.translate(W/2,H/2);
+
+        ctx.rotate(player.angle);
+
+        const cone =
+            ctx.createRadialGradient(
+                0,
+                0,
+                20,
+                0,
+                0,
+                550
+            );
+
+        cone.addColorStop(0,"rgba(255,255,255,.08)");
+        cone.addColorStop(.5,"rgba(255,255,255,.035)");
+        cone.addColorStop(1,"rgba(255,255,255,0)");
+
+        ctx.fillStyle = cone;
+
+        ctx.beginPath();
+
+        ctx.moveTo(0,0);
+        ctx.arc(
+            0,
+            0,
+            550,
+            -.38,
+            .38
+        );
+
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
+/* =========================
+   GAME LOOP
+========================= */
+
+let lastTime = performance.now();
+
+function loop(time) {
+
+    const dt = Math.min(
+        (time-lastTime)/1000,
+        .05
+    );
+
+    lastTime = time;
+
+    update(dt);
+    draw();
+
+    requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
+
+</script>
+
+</body>
+</html>
+```
